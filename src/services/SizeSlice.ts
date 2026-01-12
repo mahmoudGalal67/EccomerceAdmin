@@ -1,14 +1,8 @@
-// services/apiSlice.js
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-
 import { sizeType } from "../types/types";
+import { baseApi } from "./baseApi";
 
 // Step 1: Create API slice
-export const SizeSlice = createApi({
-  reducerPath: "Size", // unique key in store
-  baseQuery: fetchBaseQuery({
-    baseUrl: "http://127.0.0.1:8000/api",
-  }),
+export const SizeSlice = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     // Step 2: Define endpoints
     getSizes: builder.query<sizeType[], void>({

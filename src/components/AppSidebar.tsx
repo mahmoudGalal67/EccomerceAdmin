@@ -155,6 +155,23 @@ const AppSidebar = () => {
           </SidebarGroupContent>
         </SidebarGroup>
         <SidebarGroup>
+          <SidebarGroupLabel>Orders</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <Link href="/orders">
+                    <ShoppingBasket />
+                    See All Orders
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+
+
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+        <SidebarGroup>
           <SidebarGroupLabel>Users</SidebarGroupLabel>
           <SidebarGroupAction>
             <Plus /> <span className="sr-only">Add User</span>

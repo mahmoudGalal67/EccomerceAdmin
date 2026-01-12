@@ -1,21 +1,21 @@
 import { configureStore } from "@reduxjs/toolkit";
-import { categorySlice } from "../services/categorySlice";
-import { ColorSlice } from "../services/ColorSlice";
-import { SizeSlice } from "../services/SizeSlice";
-import { ProductSlice } from "../services/ProductSlice";
+import authReducer from "../context/authSlice";
+import { authApi } from "../services/authApi";
+import { baseApi } from "@/services/baseApi";
 
 export const store = configureStore({
   reducer: {
-    [ProductSlice.reducerPath]: ProductSlice.reducer,
-    [categorySlice.reducerPath]: categorySlice.reducer,
-    [ColorSlice.reducerPath]: ColorSlice.reducer,
-    [SizeSlice.reducerPath]: SizeSlice.reducer,
+    auth: authReducer,
+    [authApi.reducerPath]: authApi.reducer,
+    [baseApi.reducerPath]: baseApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat([
-      ProductSlice.middleware,
-      categorySlice.middleware,
-      ColorSlice.middleware,
-      SizeSlice.middleware,
+      authApi.middleware,
+      baseApi.middleware,
     ]),
 });
+
+
+export type RootState = ReturnType<typeof store.getState>;
+export type AppDispatch = typeof store.dispatch;
