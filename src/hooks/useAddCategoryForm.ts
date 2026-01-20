@@ -46,7 +46,6 @@ export const useAddCategoryForm = () => {
     try {
       const formData = createCategoryFormData(values);
       const result = await addCategory(formData).unwrap();
-      console.log("✅ Category created:", result);
 
       form.reset();
       setPreview(null);

@@ -14,6 +14,7 @@ export const categorySlice = baseApi.injectEndpoints({
       query: (newCategory) => ({
         url: "/categories",
         method: "POST",
+        body: newCategory,
       }),
     }),
     updateCategory: builder.mutation({

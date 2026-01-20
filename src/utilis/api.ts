@@ -1,27 +1,26 @@
-import api from "./axios";
-import axios from "axios";
+import { axiosBaseApi } from "./axios";
 
 // categories
 export const categoriesAPi = {
-  getCategories: () => api.get("/categories"),
+  getCategories: () => axiosBaseApi.get("/categories"),
 };
 
 //UserInfo
 export const userInfoAPi = {
-  getUserInfoAPis: () => api.get("/user"),
+  getUserInfoAPis: () => axiosBaseApi.get("/user"),
 };
 // products
 export const productsAPi = {
-  getProducts: (params = {}) => api.get("/products", { params }),
-  getProductDetials: (id: string) => api.get(`/products/${id}`),
+  getProducts: (params = {}) => axiosBaseApi.get("/products", { params }),
+  getProductDetials: (id: string) => axiosBaseApi.get(`/products/${id}`),
 };
 // checkout
 export const checkoutAPi = {
-  checkout: (params = {}, data: any) => api.post("/checkout", data),
+  checkout: (params = {}, data: any) => axiosBaseApi.post("/checkout", data),
 };
 // checkout
 export const ordersApi = {
-  getOrders: () => api.get("/orders/client"),
+  getOrders: () => axiosBaseApi.get("/orders/client"),
 };
 
 // token

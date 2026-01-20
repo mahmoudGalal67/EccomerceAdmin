@@ -4,9 +4,9 @@ import {
   ColumnDef,
   flexRender,
   getCoreRowModel,
+  getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
-  SortingState,
   useReactTable,
 } from "@tanstack/react-table";
 
@@ -19,70 +19,85 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { DataTablePagination } from "@/components/TablePagination";
-import { useState } from "react";
-import { Trash2 } from "lucide-react";
+import { useUpdateOrderStatusMutation } from "@/services/orderApi";
+import { SortAscIcon } from "lucide-react";
+import Loading from "./loading";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+  rowSelection?: Record<string, boolean>;
+  setRowSelection?: React.Dispatch<React.SetStateAction<Record<string, boolean>>>;
+  isLoading?: boolean;
+  isFetching?: boolean;
+  onSuccess?: () => void;
+  setIsLoadingModal?: React.Dispatch<React.SetStateAction<boolean>>;
+
 }
 
-export function DataTable<TData, TValue>({
+export function DataTable<TData extends { id: number }, TValue>({
   columns,
   data,
-}: DataTableProps<TData, TValue>) {
-  const [sorting, setSorting] = useState<SortingState>([]);
-  const [rowSelection, setRowSelection] = useState({});
+  rowSelection = {},
+  setRowSelection,
+  isLoading,
+  isFetching,
 
-  const table = useReactTable({
+}: DataTableProps<TData, TValue>) {
+
+  const table = useReactTable<TData>({
     data,
     columns,
+    state: { rowSelection },
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
-    onSortingChange: setSorting,
+    getFilteredRowModel: getFilteredRowModel(),
     onRowSelectionChange: setRowSelection,
-    state: {
-      sorting,
-      rowSelection,
-    },
+    getRowId: (row) => row.id.toString(),
+
+
   });
 
   return (
     <div className="rounded-md border">
-      {Object.keys(rowSelection).length > 0 && (
-        <div className="flex justify-end">
-          <button className="flex items-center gap-2 bg-red-500 text-white px-2 py-1 text-sm rounded-md m-4 cursor-pointer">
-            <Trash2 className="w-4 h-4" />
-            Delete Product(s)
-          </button>
-        </div>
-      )}
       <Table>
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id}>
-              {headerGroup.headers.map((header) => {
-                return (
-                  <TableHead key={header.id}>
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(
-                        header.column.columnDef.header,
-                        header.getContext()
-                      )}
-                  </TableHead>
-                );
-              })}
+              {headerGroup.headers.map((header) => (
+                <TableHead key={header.id}>
+                  {header.isPlaceholder
+                    ? null
+                    : flexRender(header.column.columnDef.header, header.getContext())}
+                  {header.column.getCanSort() && (
+                    <SortAscIcon
+                      onClick={header.column.getToggleSortingHandler()}
+                      size={20}
+                      className="cursor-pointer inline-flex mx-2"
+                    />
+                  )}
+                  {
+                    <span>{header.column.getIsSorted() ? (header.column.getIsSorted() === "asc" ? " 🔼" : " 🔽") : ""}</span>
+                  }
+                </TableHead>
+              ))}
             </TableRow>
           ))}
         </TableHeader>
+
         <TableBody>
-          {table.getRowModel().rows?.length ? (
+          {(isLoading || isFetching) ? (
+            <TableRow>
+              <TableCell colSpan={columns.length} className="p-4">
+                <Loading fullWidth />
+              </TableCell>
+            </TableRow>
+          ) : table.getRowModel().rows.length ? (
             table.getRowModel().rows.map((row) => (
               <TableRow
                 key={row.id}
-                data-state={row.getIsSelected() && "selected"}
+                data-state={row.getIsSelected() ? "selected" : undefined}
               >
                 {row.getVisibleCells().map((cell) => (
                   <TableCell key={cell.id}>
@@ -100,6 +115,7 @@ export function DataTable<TData, TValue>({
           )}
         </TableBody>
       </Table>
+
       <DataTablePagination table={table} />
     </div>
   );

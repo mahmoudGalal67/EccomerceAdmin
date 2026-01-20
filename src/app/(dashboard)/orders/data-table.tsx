@@ -1,94 +1,144 @@
-'use client';
+"use client";
 
 import {
+  ColumnDef,
   flexRender,
   getCoreRowModel,
+  getFilteredRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { api } from "@/lib/api";
 
-export function DataTable({
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { DataTablePagination } from "@/components/TablePagination";
+import { useUpdateOrderStatusMutation } from "@/services/orderApi";
+import Loading from "./loading";
+import { SortAscIcon } from "lucide-react";
+
+interface DataTableProps<TData, TValue> {
+  columns: ColumnDef<TData, TValue>[];
+  data: TData[];
+  rowSelection?: Record<string, boolean>;
+  setRowSelection?: React.Dispatch<React.SetStateAction<Record<string, boolean>>>;
+  isLoading?: boolean;
+  isFetching?: boolean;
+  onSuccess?: () => void;
+  setIsLoadingModal?: React.Dispatch<React.SetStateAction<boolean>>;
+
+}
+
+export function DataTable<TData extends { id: number }, TValue>({
   columns,
   data,
-  page,
-  setPage,
-  pageCount,
-  selectedIds,
-  setSelectedIds,
-  search,
+  rowSelection = {},
+  setRowSelection,
   isLoading,
-}) {
-  const qc = useQueryClient();
+  isFetching,
+  onSuccess,
+  setIsLoadingModal,
+}: DataTableProps<TData, TValue>) {
+  const [updateOrderStatus] = useUpdateOrderStatusMutation();
 
-  const updateStatus = useMutation({
-    mutationFn: ({ id, status }) =>
-      api.patch(`/orders/${id}/status`, { status }),
-    onError: (_, __, ctx: any) => ctx?.rollback?.(),
-    onSettled: () => qc.invalidateQueries({ queryKey: ["orders"] }),
-  });
-
-  const table = useReactTable({
+  const table = useReactTable<TData>({
     data,
     columns,
-    manualPagination: true,
-    pageCount,
+    state: { rowSelection },
     getCoreRowModel: getCoreRowModel(),
-    state: {
-      rowSelection: Object.fromEntries(selectedIds.map(id => [id, true])),
-    },
-    onRowSelectionChange: (updater) => {
-      const next =
-        typeof updater === "function"
-          ? updater(table.getState().rowSelection)
-          : updater;
-      setSelectedIds(Object.keys(next).map(Number));
-    },
+    getPaginationRowModel: getPaginationRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    onRowSelectionChange: setRowSelection,
+    getRowId: (row) => row.id.toString(),
     meta: {
-      search,
-      updateStatus: (id, status, rollback) =>
-        updateStatus.mutate({ id, status }, { context: { rollback } }),
+      updateData: async (rowIndex: number, columnId: string, value: any) => {
+        if (columnId === "status") {
+          setIsLoadingModal?.(true);
+          try {
+            await updateOrderStatus({ id: data[rowIndex].id, status: value }).unwrap();
+            onSuccess?.();
+          } finally {
+            setIsLoadingModal?.(false);
+          }
+        }
+      },
     },
+    // globalFilterFn: (row, _columnId, filterValue: string) => {
+    //   const search = filterValue.toLowerCase();
+    //   return (
+    //     // @ts-ignore
+    //     String(row.original.order_id).includes(search) ||
+    //     // @ts-ignore
+    //     row.original.order?.name?.toLowerCase().includes(search)
+    //   );
+    // },
   });
 
-  if (isLoading) return <p>Loading…</p>;
-
   return (
-    <div>
-      <table border={1} width="100%">
-        <thead>
-          {table.getHeaderGroups().map(hg => (
-            <tr key={hg.id}>
-              {hg.headers.map(h => (
-                <th key={h.id}>
-                  {flexRender(h.column.columnDef.header, h.getContext())}
-                </th>
+    <div className="rounded-md border">
+      <Table>
+        <TableHeader>
+          {table.getHeaderGroups().map((headerGroup) => (
+            <TableRow key={headerGroup.id}>
+              {headerGroup.headers.map((header) => (
+                <TableHead key={header.id}>
+                  {header.isPlaceholder
+                    ? null
+                    : flexRender(header.column.columnDef.header, header.getContext())}
+                  {header.column.getCanSort() && (
+                    <SortAscIcon
+                      onClick={header.column.getToggleSortingHandler()}
+                      size={20}
+                      className="cursor-pointer inline-flex mx-2"
+                    />
+                  )}
+                  {
+                    <span>{header.column.getIsSorted() ? (header.column.getIsSorted() === "asc" ? " 🔼" : " 🔽") : ""}</span>
+                  }
+                </TableHead>
               ))}
-            </tr>
+            </TableRow>
           ))}
-        </thead>
-        <tbody>
-          {table.getRowModel().rows.map(row => (
-            <tr key={row.id}>
-              {row.getVisibleCells().map(cell => (
-                <td key={cell.id}>
-                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                </td>
-              ))}
-            </tr>
-          ))}
-        </tbody>
-      </table>
+        </TableHeader>
 
-      <div style={{ marginTop: 10 }}>
-        <button disabled={page === 1} onClick={() => setPage(p => p - 1)}>
-          Prev
-        </button>
-        <span> Page {page} </span>
-        <button disabled={page === pageCount} onClick={() => setPage(p => p + 1)}>
-          Next
-        </button>
-      </div>
+        <TableBody>
+          {(isLoading || isFetching) ? (
+            <TableRow>
+              <TableCell colSpan={columns.length} className="p-4">
+                <Loading fullWidth />
+              </TableCell>
+            </TableRow>
+          ) : table.getRowModel().rows.length ? (
+            table.getRowModel().rows.map((row) => (
+              <TableRow
+                key={row.id}
+                data-state={row.getIsSelected() ? "selected" : undefined}
+              >
+                {row.getVisibleCells().map((cell) => (
+                  <TableCell key={cell.id}>
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </TableCell>
+                ))}
+              </TableRow>
+            ))
+          ) : (
+            <TableRow>
+              <TableCell colSpan={columns.length} className="h-24 text-center">
+                No results.
+              </TableCell>
+            </TableRow>
+          )}
+        </TableBody>
+      </Table>
+
+      <DataTablePagination table={table} />
     </div>
   );
 }

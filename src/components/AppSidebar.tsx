@@ -1,3 +1,5 @@
+'use client';
+
 import {
   Home,
   Inbox,
@@ -40,6 +42,7 @@ import AddOrder from "./AddOrder";
 import AddUser from "./AddUser";
 import AddCategory from "./AddCategory";
 import AddProduct from "./AddProduct";
+import { useState } from "react";
 
 const items = [
   {
@@ -70,6 +73,7 @@ const items = [
 ];
 
 const AppSidebar = () => {
+  const [AdduserSheet, setAdduserSheet] = useState(false);
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader className="py-4">
@@ -188,7 +192,7 @@ const AppSidebar = () => {
               </SidebarMenuItem>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild>
-                  <Sheet>
+                  <Sheet open={AdduserSheet} onOpenChange={setAdduserSheet}>
                     <SheetTrigger asChild>
                       <SidebarMenuButton asChild>
                         <Link href="#">
@@ -197,7 +201,7 @@ const AppSidebar = () => {
                         </Link>
                       </SidebarMenuButton>
                     </SheetTrigger>
-                    <AddUser />
+                    <AddUser setAdduserSheet={setAdduserSheet} />
                   </Sheet>
                 </SidebarMenuButton>
               </SidebarMenuItem>

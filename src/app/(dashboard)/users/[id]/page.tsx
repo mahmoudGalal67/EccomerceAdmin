@@ -1,3 +1,5 @@
+'use client'
+
 import CardList from "@/components/CardList";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -20,8 +22,13 @@ import { Button } from "@/components/ui/button";
 import EditUser from "@/components/EditUser";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import AppLineChart from "@/components/AppLineChart";
+import ProfilePhoto from "@/components/ProfilePhoto";
+import { useGetUserByIdQuery, useGetUsersQuery } from "@/services/userApi";
 
-const SingleUserPage = () => {
+const SingleUserPage = ({ id }: { id: number }) => {
+  // const { data: user, isLoading, isError } = useGetUserByIdQuery(id);
+  const { data, isLoading, isError } = useGetUsersQuery({ search: "", role: "" });
+  const user = {}
   return (
     <div className="">
       <Breadcrumb>
@@ -35,7 +42,7 @@ const SingleUserPage = () => {
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
-            <BreadcrumbPage>John Doe</BreadcrumbPage>
+            <BreadcrumbPage>{user?.name}</BreadcrumbPage>
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
@@ -69,9 +76,9 @@ const SingleUserPage = () => {
                   />
                 </HoverCardTrigger>
                 <HoverCardContent>
-                  <h1 className="font-bold mb-2">Admin</h1>
+                  <h1 className="font-bold mb-2">{user?.role}</h1>
                   <p className="text-sm text-muted-foreground">
-                    Admin users have access to all features and can manage
+                    {user?.role} users have access to all features and can manage
                     users.
                   </p>
                 </HoverCardContent>
@@ -108,12 +115,9 @@ const SingleUserPage = () => {
           </div>
           {/* USER CARD CONTAINER */}
           <div className="bg-primary-foreground p-4 rounded-lg space-y-2">
-            <div className="flex items-center gap-2">
-              <Avatar className="size-12">
-                <AvatarImage src="https://avatars.githubusercontent.com/u/1486366" />
-                <AvatarFallback>JD</AvatarFallback>
-              </Avatar>
-              <h1 className="text-xl font-semibold">John Doe</h1>
+            <div className="flex items-center gap-8">
+              {/* <ProfilePhoto userId={id} /> */}
+              <h1 className="text-xl font-semibold">{user?.name}</h1>
             </div>
             <p className="text-sm text-muted-foreground">
               Lorem ipsum dolor, sit amet consectetur adipisicing elit. Vel
@@ -142,11 +146,11 @@ const SingleUserPage = () => {
               </div>
               <div className="flex items-center gap-2">
                 <span className="font-bold">Full name:</span>
-                <span>John Doe</span>
+                <span>{user?.name}</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="font-bold">Email:</span>
-                <span>john.doe@gmail.com</span>
+                <span>{user?.email}</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="font-bold">Phone:</span>
@@ -162,13 +166,13 @@ const SingleUserPage = () => {
               </div>
             </div>
             <p className="text-sm text-muted-foreground mt-4">
-              Joined on 2025.01.01
+              Joined on {user?.created_at}
             </p>
           </div>
         </div>
         {/* RIGHT */}
         <div className="w-full xl:w-2/3 space-y-6">
-          
+
           {/* CHART CONTAINER */}
           <div className="bg-primary-foreground p-4 rounded-lg">
             <h1 className="text-xl font-semibold">User Activity</h1>

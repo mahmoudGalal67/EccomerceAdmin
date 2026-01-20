@@ -4,7 +4,8 @@ export type ProductType = {
   name: string;
   slug: string;
   description?: string | null;
-  base_price?: string | null; // optional if variants exist
+  base_price?: number | null; // optional if variants exist
+  base_images?: [string];
   is_active: boolean | number;
   is_featured: boolean | number;
   deleted_at?: string | null;
@@ -46,16 +47,15 @@ export interface Variant {
   images: VariantImage[];
 }
 
-export interface VariantImage {
-  id: number;
-  variant_id: number;
-  file_path: string;
-  is_main: boolean | number;
-  sort_order: number;
-  created_at: string;
-  updated_at: string;
-}
-
+export type VariantImage = {
+  id: string;               // DnD key (UUID)
+  type: "existing" | "new"; // existing from DB or newly uploaded
+  file?: File;              // for new uploads
+  file_path?: string;       // existing file path
+  previewUrl: string;       // image preview
+  is_main?: boolean | number;
+  sort_order?: number;      // optional, will save to backend
+};
 export type categoryType = {
   id?: number;
   name: string;

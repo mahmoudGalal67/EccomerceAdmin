@@ -1,89 +1,97 @@
-'use client';
-
-import { ColumnDef } from "@tanstack/react-table";
 import Link from "next/link";
-import { Order } from "@/types/order";
+import StatusCell from "@/components/StatusCell";
+import { Checkbox } from "@/components/ui/checkbox";
 
-function highlight(text: string, q?: string) {
-  if (!q) return text;
-  const r = new RegExp(`(${q})`, "gi");
-  return text.split(r).map((p, i) =>
-    r.test(p) ? <mark key={i}>{p}</mark> : p
-  );
-}
+export type Order = {
+  id: number;
+  subtotal: number;
+  order_id: number;
+  status: "processing" | "completed" | "cancelled";
+  order: {
+    name: string;
+    email: string;
+    phone: string;
+    city: string;
+    payment_status: "paid" | "pending" | "failed";
+  };
+  items: { id: number; variant: { product: { name: string } } }[];
+};
 
-export const columns = (): ColumnDef<Order>[] => [
+
+export const columns = [
   {
     id: "select",
-    header: ({ table }) => (
-      <input
-        type="checkbox"
-        checked={table.getIsAllPageRowsSelected()}
-        onChange={table.getToggleAllPageRowsSelectedHandler()}
+    header: ({ table }: any) => (
+      <Checkbox
+        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+        checked={
+          table.getIsAllPageRowsSelected() ||
+          (table.getIsSomePageRowsSelected() && "indeterminate")
+        }
       />
     ),
-    cell: ({ row }) => (
-      <input
-        type="checkbox"
+    cell: ({ row }: any) => (
+      <Checkbox
+        onCheckedChange={(value) => row.toggleSelected(!!value)}
         checked={row.getIsSelected()}
-        onChange={row.getToggleSelectedHandler()}
       />
     ),
   },
   {
-    header: "Order",
-    cell: ({ row, table }) => (
-      <Link href={`/orders/${row.original.order_id}`}>
-        {highlight(`#${row.original.id}`, table.options.meta?.search)}
+    accessorKey: "order_id",
+    header: "#Order ID",
+    cell: ({ row }: any) => (
+      <Link href={`/orders/${row.original.order_id}`} className="font-medium text-blue-600 hover:underline">
+        #{row.original.id}
       </Link>
     ),
   },
   {
-    header: "Customer",
-    cell: ({ row, table }) => (
-      <div>
-        <div>
-          {highlight(row.original.order.name, table.options.meta?.search)}
-        </div>
-        <small>{row.original.order.email}</small>
-      </div>
-    ),
-  },
-  {
-    header: "City",
-    accessorFn: (row) => row.order.city,
-  },
-  {
-    header: "Products",
-    cell: ({ row }) =>
-      row.original.items.map(i => i.variant.product.name).join(", "),
-  },
-  {
-    header: "Total",
-    accessorKey: "subtotal",
-  },
-  {
+    accessorKey: "status",
     header: "Status",
-    cell: ({ row, table }) => {
-      const meta: any = table.options.meta;
-      const old = row.original.status;
-
-      return (
-        <select
-          value={row.original.status}
-          onChange={(e) => {
-            const value = e.target.value;
-            row.original.status = value;
-            meta.updateStatus(row.original.id, value, () => {
-              row.original.status = old;
-            });
-          }}
-        >
-          {["pending", "processing", "shipped", "completed", "cancelled"].map(s => (
-            <option key={s} value={s}>{s}</option>
-          ))}
-        </select>
-      );
+    cell: StatusCell,
+    enableSorting: false,
+    filterFn: (row: any, columnId: any, filterValue: any) => {
+      if (!filterValue) return true;
+      return row.getValue(columnId) === filterValue;
     },
   },
-];
+  {
+    id: "order_name",
+    header: "Name",
+    accessorFn: (row: any) => row.order?.name ?? "",
+    cell: (info: any) => info.getValue(),
+  },
+  {
+    id: "order_email",
+    header: "Email",
+    accessorFn: (row: any) => row.order?.email ?? "",
+    cell: (info: any) => info.getValue(),
+    enableSorting: false,
+  },
+  {
+    id: "order_phone",
+    header: "Phone",
+    accessorFn: (row: any) => row.order?.phone ?? "",
+    cell: (info: any) => info.getValue(),
+    enableSorting: false,
+  },
+  {
+    id: "order_city",
+    header: "City",
+    accessorFn: (row: any) => row.order?.city ?? "",
+    cell: (info: any) => info.getValue(),
+    enableSorting: false,
+  },
+  {
+    accessorFn: (row: any) => row.items.map((i: any) => i.variant.product.name).join(", "),
+    header: "Products",
+    enableSorting: false,
+  },
+  {
+    accessorKey: "subtotal",
+    header: "Subtotal",
+    cell: ({ row }: any) => <span>${row.original.subtotal}</span>,
+  },
+]
+

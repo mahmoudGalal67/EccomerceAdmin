@@ -18,10 +18,10 @@ import Link from "next/link";
 
 export type User = {
   id: string;
-  avatar: string;
-  fullName: string;
+  name: string;
   email: string;
-  status: "active" | "inactive";
+  role: "admin" | "client" | "seller";
+  profile_image?: string;
 };
 
 export const columns: ColumnDef<User>[] = [
@@ -44,15 +44,22 @@ export const columns: ColumnDef<User>[] = [
     ),
   },
   {
+    id: "id",
+    header: "#Id",
+    accessorKey: "id",
+    enableSorting: false,
+  },
+  {
     accessorKey: "avatar",
     header: "Avatar",
+    enableSorting: false,
     cell: ({ row }) => {
       const user = row.original;
       return (
         <div className="w-9 h-9 relative">
           <Image
-            src={user.avatar}
-            alt={user.fullName}
+            src={user.profile_photo || `/users/${Math.floor(Math.random() * 20) + 1}.png`}
+            alt={user.name}
             fill
             className="rounded-full object-cover"
           />
@@ -61,38 +68,41 @@ export const columns: ColumnDef<User>[] = [
     },
   },
   {
-    accessorKey: "fullName",
-    header: "User",
-  },
-  {
-    accessorKey: "email",
+    accessorKey: "name",
     header: ({ column }) => {
       return (
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Email
+          User
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       );
     },
   },
   {
-    accessorKey: "status",
-    header: "Status",
+    accessorKey: "email",
+    enableSorting: false,
+    header: "Email",
+  },
+  {
+    accessorKey: "role",
+    header: "Role",
+    enableSorting: false,
     cell: ({ row }) => {
-      const status = row.getValue("status");
+      const role = row.getValue("role");
 
       return (
         <div
           className={cn(
             `p-1 rounded-md w-max text-xs`,
-            status === "active" && "bg-green-500/40",
-            status === "inactive" && "bg-red-500/40"
+            role === "admin" && "bg-green-500/40",
+            role === "seller" && "bg-red-500/40",
+            role === "client" && "bg-red-500/40",
           )}
         >
-          {status as string}
+          {role as string}
         </div>
       );
     },

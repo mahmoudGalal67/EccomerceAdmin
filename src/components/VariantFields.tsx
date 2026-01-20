@@ -17,44 +17,59 @@ import {
   restrictToHorizontalAxis,
   restrictToParentElement,
 } from "@dnd-kit/modifiers";
-
+import { UploadCloud, ImageIcon } from "lucide-react";
 import { useGetColorsQuery } from "@/services/ColorSlice";
 import { useGetSizesQuery } from "@/services/SizeSlice";
 
 // Small component for each draggable image
-function SortableImage({ file, onRemove }: any) {
-  const { attributes, listeners, setNodeRef, transform, transition } =
-    useSortable({ id: file.previewId });
+function SortableImage({ image, onRemove }: any) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: image.dndId });
+
 
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
+    scale: isDragging ? "1.05" : "1",
+    zIndex: isDragging ? 50 : 1,
+    boxShadow: isDragging ? "0 10px 25px rgba(0,0,0,0.5)" : undefined,
     touchAction: "none",
   };
 
   return (
     <div ref={setNodeRef} style={style} {...attributes}>
-      <div className="relative w-20 h-20">
+      <div className="relative group aspect-square rounded-lg overflow-hidden border bg-black">
         <img
-          src={file.previewUrl ?? URL.createObjectURL(file)}
+          src={
+            image.type === "existing"
+              ? `${process.env.NEXT_PUBLIC_API_URL}/storage/${image.file_path}`
+              : image.previewUrl
+          }
+
           alt="preview"
-          className="w-20 h-20 object-cover rounded cursor-move"
+          className="h-full w-full object-cover cursor-grab active:cursor-grabbing"
           {...listeners}
         />
         <button
           type="button"
-          className="absolute top-0 right-0 bg-red-500 text-white text-[8px] cursor-pointer p-1 rounded-full"
-          onClick={(e) => {
-            e.stopPropagation(); // prevent drag capture
-            onRemove(file);
-          }}
-        >
-          ✖
-        </button>
+          className="absolute top-1 right-1 bg-black/70 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition cursor-pointer"
+          onClick={(e) => { e.stopPropagation(); onRemove(image); }}
+        >✕</button>
+
+        {image.type === "existing" && (
+          <span className="absolute bottom-1 left-1 text-[9px] bg-white text-black px-1 rounded">SAVED</span>
+        )}
       </div>
     </div>
   );
 }
+
 
 export default function VariantFields({
   index,
@@ -64,10 +79,16 @@ export default function VariantFields({
   setValue,
   remove,
   errors,
+  setIsDirty,
 }: any) {
   const selectedColor = watch(`variants.${index}.color_id`);
   const selectedSize = watch(`variants.${index}.size_id`);
-  const images = watch(`variants.${index}.images`) || [];
+  const images =
+    watch(`variants.${index}.images_all`) ?? [];
+
+
+  const deletedImages = watch(`variants.${index}.deleted_images`) || [];
+
 
   const { data: colors } = useGetColorsQuery();
   const { data: sizes } = useGetSizesQuery();
@@ -80,14 +101,19 @@ export default function VariantFields({
     const { active, over } = event;
     if (!over || active.id === over.id) return;
 
-    const oldIndex = images.findIndex(
-      (img: any) => img.previewId === active.id
-    );
-    const newIndex = images.findIndex((img: any) => img.previewId === over.id);
-
+    const oldIndex = images.findIndex((i: any) => i.dndId === active.id);
+    const newIndex = images.findIndex((i: any) => i.dndId === over.id);
     const reordered = arrayMove(images, oldIndex, newIndex);
-    setValue(`variants.${index}.images`, reordered, { shouldValidate: true });
+    const reorderedWithOrder = reordered.map((img: any, i: number) => ({ ...img, sort_order: i, }));
+    setValue(
+      `variants.${index}.images_all`,
+      reorderedWithOrder
+    );
+
+    setIsDirty(true);
   };
+
+
 
   return (
     <div
@@ -101,6 +127,10 @@ export default function VariantFields({
           <input
             type="number"
             {...register(`variants.${index}.price`)}
+            onChange={(e) => {
+              register(`variants.${index}.price`).onChange(e);
+              setIsDirty(true);
+            }}
             className="w-full rounded-lg p-2 bg-[#171717] border border-gray-600"
           />
           {errors.variants?.[index]?.price && (
@@ -113,7 +143,11 @@ export default function VariantFields({
           <label className="block text-sm mb-2">Stock</label>
           <input
             type="number"
-            {...register(`variants.${index}.stock`)}
+            {...register(String(`variants.${index}.stock`))}
+            onChange={(e) => {
+              register(String(`variants.${index}.stock`)).onChange(e);
+              setIsDirty(true);
+            }}
             className="w-full rounded-lg p-2 bg-[#171717] border border-gray-600"
           />
           {errors.variants?.[index]?.stock && (
@@ -133,14 +167,17 @@ export default function VariantFields({
             return (
               <label
                 key={color.id}
-                className={`flex items-center gap-2 cursor-pointer border-2 rounded-full p-1 ${
-                  isSelected ? "border-white" : "border-transparent"
-                }`}
+                className={`flex items-center gap-2 cursor-pointer border-2 rounded-full p-1 ${isSelected ? "border-white" : "border-transparent"
+                  }`}
               >
                 <input
                   type="radio"
-                  value={color.id}
-                  {...register(`variants.${index}.color_id`)}
+                  value={String(color.id)}
+                  {...register(String(`variants.${index}.color_id`))}
+                  onChange={(e) => {
+                    register(String(`variants.${index}.color_id`)).onChange(e);
+                    setIsDirty(true);
+                  }}
                   className="hidden"
                 />
                 <div
@@ -167,14 +204,17 @@ export default function VariantFields({
             return (
               <label
                 key={size.id}
-                className={`w-10 h-10 flex items-center justify-center rounded-md border-2 cursor-pointer ${
-                  isSelected ? "border-white" : "border-gray-600"
-                }`}
+                className={`w-10 h-10 flex items-center justify-center rounded-md border-2 cursor-pointer ${isSelected ? "border-white" : "border-gray-600"
+                  }`}
               >
                 <input
                   type="radio"
-                  value={size.id}
-                  {...register(`variants.${index}.size_id`)}
+                  value={String(size.id)}
+                  {...register(String(`variants.${index}.size_id`))}
+                  onChange={(e) => {
+                    register(String(`variants.${index}.size_id`)).onChange(e);
+                    setIsDirty(true);
+                  }}
                   className="hidden"
                 />
                 <span className="text-xs">{size.code}</span>
@@ -193,23 +233,50 @@ export default function VariantFields({
       {selectedColor && selectedSize && (
         <div>
           <label className="block text-sm mb-2">Upload Images</label>
-          <input
-            type="file"
-            accept="image/*"
-            multiple
-            onChange={(e) => {
-              const files = Array.from(e.target.files || []).map((file) =>
-                Object.assign(file, {
-                  previewId: crypto.randomUUID(),
+          {/* Upload box */}
+          <label
+            htmlFor={`variants.${index}.images`}
+            className={`
+      flex flex-col items-center justify-center gap-2
+      border-2 border-dashed rounded-xl p-6
+      cursor-pointer transition
+      hover:border-primary hover:bg-primary/5
+      ${errors.variants?.[index]?.images ? "border-red-500" : "border-muted"}
+    `}
+          >
+            <UploadCloud className="h-8 w-8 text-muted-foreground" />
+            <p className="text-sm text-muted-foreground">
+              Click or drag images here
+            </p>
+            <p className="text-xs text-muted-foreground">
+              PNG, JPG, WEBP (max 2MB)
+            </p>
+
+            <input
+              id={`variants.${index}.images`}
+              type="file"
+              multiple
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => {
+                const files = Array.from(e.target.files || []).map(file => ({
+                  file,
                   previewUrl: URL.createObjectURL(file),
-                })
-              );
-              setValue(`variants.${index}.images`, [...images, ...files], {
-                shouldValidate: true,
-              });
-            }}
-            className="text-xs"
-          />
+                  type: "new",
+                  dndId: crypto.randomUUID(),
+                }));
+
+
+                setValue(
+                  `variants.${index}.images_all`,
+                  [...images, ...files]
+                );
+
+                setIsDirty(true);
+
+              }}
+            />
+          </label>
 
           {/* Drag & Drop Preview */}
           <DndContext
@@ -219,24 +286,31 @@ export default function VariantFields({
             modifiers={[restrictToHorizontalAxis, restrictToParentElement]} // ✅ Limit drag direction
           >
             <SortableContext
-              items={images.map((file: any) => file.previewId)}
+              items={images.map((img: any) => img.dndId)}
               strategy={rectSortingStrategy}
             >
-              <div className="flex flex-wrap gap-3 mt-2">
-                {images?.map((file: any, i: number) => (
+              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3 mt-5">
+                {images?.map((img: any, i: number) => (
                   <SortableImage
-                    key={file.previewId ?? file.name}
-                    file={file}
+                    key={img.dndId}
+                    image={img}
                     index={i}
-                    onRemove={(fileToRemove: any) => {
-                      if (fileToRemove.previewUrl)
-                        URL.revokeObjectURL(fileToRemove.previewUrl);
-                      const updated = images.filter(
-                        (f: any) => f !== fileToRemove
+                    onRemove={(image: any) => {
+                      if (image.type === "existing") {
+                        setValue(
+                          `variants.${index}.deleted_images`,
+                          [...(deletedImages ?? []), image.file_path]
+                        );
+                      } else {
+                        URL.revokeObjectURL(image.previewUrl);
+                      }
+
+                      setValue(
+                        `variants.${index}.images_all`,
+                        images.filter((img: any) => img.dndId !== image.dndId)
                       );
-                      setValue(`variants.${index}.images`, updated, {
-                        shouldValidate: true,
-                      });
+
+                      setIsDirty(true);
                     }}
                   />
                 ))}
@@ -256,7 +330,10 @@ export default function VariantFields({
       <button
         type="button"
         className="text-red-400 text-sm mt-2 bg-[#030000] p-2 rounded-2xl"
-        onClick={() => remove(index)}
+        onClick={() => {
+          remove(index);
+          setIsDirty(true);
+        }}
       >
         ❌ Delete Variant
       </button>

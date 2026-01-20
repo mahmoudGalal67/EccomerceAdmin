@@ -173,7 +173,7 @@ function Login() {
 
 
             </div>
-            <SuccessModal open={success} />
+            <SuccessModal open={success} onClose={() => setSuccess(false)} />
         </div>
     );
 }

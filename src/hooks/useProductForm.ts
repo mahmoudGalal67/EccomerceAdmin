@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { productSchema, ProductForm } from "../schemas/productSchema";
@@ -20,7 +19,10 @@ export const useProductForm = () => {
       name: "",
       description: "",
       base_price: "",
+      base_images: [],
       category_id: "",
+      existing_base_images: [],
+      deleted_base_images: [],
       variants: [],
     },
   });
@@ -29,20 +31,6 @@ export const useProductForm = () => {
     control,
     name: "variants",
   });
-
-  // Cleanup object URLs on unmount
-  useEffect(() => {
-    return () => {
-      const allVariants = watch("variants") || [];
-      allVariants.forEach((variant) => {
-        variant.images?.forEach((file: any) => {
-          if (file.previewUrl) {
-            URL.revokeObjectURL(file.previewUrl);
-          }
-        });
-      });
-    };
-  }, [watch]);
 
   return {
     register,

@@ -1,73 +1,120 @@
-'use client';
+"use client";
 
-import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { api } from "@/lib/api";
-import { useDebounce } from "@/hooks/useDebounce";
-import { DataTable } from "./data-table";
+import { useGetOrdersQuery, useDeleteOrdersMutation } from "@/services/orderApi";
 import { columns } from "./columns";
+import { DataTable } from "./data-table";
+import { useState, useMemo } from "react";
 
-export default function OrdersPage() {
+
+import SuccessModal from "@/components/SuccessModal";
+import LoadingSpinner from "@/components/LoadingSpinner";
+import AlertModal from "@/components/AlertModal";
+import { useDebounce } from "@/hooks/useDebounce";
+import OrdersToolbar from "@/components/TableToolBar";
+
+
+export default function PaymentsPage() {
   const [search, setSearch] = useState("");
-  const debounced = useDebounce(search);
-  const [page, setPage] = useState(1);
-  const [perPage, setPerPage] = useState(15);
-  const [selectedIds, setSelectedIds] = useState<number[]>([]);
-  const qc = useQueryClient();
+  const [status, setStatus] = useState<string>('undefined');
+  const [rowSelection, setRowSelection] = useState({});
+  const [showAlert, setShowAlert] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [showLoading, setShowLoading] = useState(false);
 
-  const { data, isLoading } = useQuery({
-    queryKey: ["orders", debounced, page, perPage],
-    queryFn: async () => {
-      const res = await api.get("/orders/seller", {
-        params: { search: debounced, page, per_page: perPage },
-      });
-      return res.data;
-    },
-    keepPreviousData: true,
+  const selectedCount = useMemo(
+    () => Object.keys(rowSelection).length,
+    [rowSelection]
+  );
+
+  // 🔹 Debounce search
+  const debouncedSearch = useDebounce(search, 300);
+
+  const {
+    data,
+    isLoading,
+    isFetching,
+    isError,
+    refetch,
+  } = useGetOrdersQuery({
+    search: debouncedSearch,
+    status,
   });
 
-  const deleteOrders = useMutation({
-    mutationFn: (ids: number[]) =>
-      api.post("/orders/bulk-delete", { ids }),
-    onSuccess: () => {
-      setSelectedIds([]);
-      qc.invalidateQueries({ queryKey: ["orders"] });
-    },
-  });
+  const [deleteOrders] = useDeleteOrdersMutation();
+
+  const handleDeleteSelected = async () => {
+    if (!selectedCount) return;
+
+    try {
+      setShowLoading(true);
+      await deleteOrders({ ids: Object.keys(rowSelection), search, status }).unwrap();
+      setShowSuccess(true);
+      setRowSelection({});
+    } finally {
+      setShowLoading(false);
+    }
+  };
+
+  const tableColumns = useMemo(() => columns, []);
 
   return (
-    <div style={{ padding: 20 }}>
-      <input
-        placeholder="Search order or name"
-        value={search}
-        onChange={(e) => {
-          setPage(1);
-          setSearch(e.target.value);
-        }}
+    <div className="px-4 py-2">
+
+      {/* 🔍 Filters */}
+      <OrdersToolbar
+        search={search}
+        onSearchChange={setSearch}
+        status={status}
+        onStatusChange={setStatus}
+        selectedCount={selectedCount}
+        onDeleteClick={() => setShowAlert(true)}
+        isFetching={isFetching}
+        onRefetch={refetch}
       />
 
-      <select value={perPage} onChange={(e) => setPerPage(+e.target.value)}>
-        {[10, 15, 25, 50].map(n => (
-          <option key={n} value={n}>{n} / page</option>
-        ))}
-      </select>
 
-      {selectedIds.length > 0 && (
-        <button onClick={() => deleteOrders.mutate(selectedIds)}>
-          Delete {selectedIds.length}
-        </button>
+      {/* 📊 Table */}
+      <DataTable
+        columns={tableColumns}
+        data={data?.data ?? []}
+        rowSelection={rowSelection}
+        setRowSelection={setRowSelection}
+        isLoading={isLoading}
+        isFetching={isFetching}
+        setIsLoadingModal={setShowLoading}
+        onSuccess={() => setShowSuccess(true)}
+      />
+
+      {isError && (
+        <p className="text-red-500 mt-2">Error loading orders</p>
       )}
 
-      <DataTable
-        columns={columns()}
-        data={data?.data ?? []}
-        page={page}
-        setPage={setPage}
-        pageCount={data?.last_page ?? 1}
-        selectedIds={selectedIds}
-        setSelectedIds={setSelectedIds}
-        search={data?._search}
-        isLoading={isLoading}
+      {/* ✅ Success */}
+      <SuccessModal
+        open={showSuccess}
+        title="Done"
+        description="Order processed successfully"
+        onClose={() => setShowSuccess(false)}
+      />
+
+      {/* 🔄 Loading */}
+      <LoadingSpinner
+        open={showLoading}
+        onClose={() => { }}
+      />
+
+      {/* ⚠️ Alert */}
+      <AlertModal
+        open={showAlert}
+        title={`Delete ${selectedCount} orders?`}
+        description="Selected orders will be permanently removed."
+        onCancel={() => setShowAlert(false)}
+        onConfirm={() => {
+          handleDeleteSelected();
+          setShowAlert(false);
+        }}
+        confirmText="Delete"
+        cancelText="Cancel"
       />
     </div>
   );

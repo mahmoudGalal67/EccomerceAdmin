@@ -1,48 +1,63 @@
 // src/services/orderApi.ts
 import { baseApi } from "./baseApi";
 
-export const orderApi = baseApi.injectEndpoints({
+export const userApi = baseApi.injectEndpoints({
     endpoints: (builder) => ({
-        // 🔹 SELLER ORDERS WITH SEARCH & FILTERS
-        getOrders: builder.query<any, { search?: string; status?: string }>({
-            query: ({ search, status }) => ({
-                url: "/orders/seller",
-                params: { search, status },
+        getUsers: builder.query<any, { search?: string; role?: string }>({
+            query: ({ search, role }) => ({
+                url: "/users",
+                params: { search, role },
             }),
-            providesTags: ["Orders"],
+            providesTags: ["Users"],
         }),
 
-        getOrderById: builder.query<any, number>({
-            query: (id) => `/orders/${id}`,
+        getUserById: builder.query<any, number>({
+            query: (id) => `/users/${id}`,
+        }),
+        createUser: builder.mutation<any, any>({
+            query: (data) => ({
+                url: `/users`,
+                method: "POST",
+                body: data,
+            }),
+            invalidatesTags: ["Users"],
+        }),
+        updateUser: builder.mutation<any, any>({
+            query: (data) => ({
+                url: `/users/${data.id}`,
+                method: "PUT",
+                body: data,
+            }),
+            invalidatesTags: ["Users"],
         }),
 
         // 🔹 UPDATE ORDER STATUS WITH OPTIMISTIC UPDATE
-        updateOrderStatus: builder.mutation<
+        updateUserRole: builder.mutation<
             { message: string },
-            { id: number; status: string }
+            { id: number; role: string }
         >({
-            query: ({ id, status }) => ({
-                url: `/orders/update-status/${id}`,
+            query: ({ id, role }) => ({
+                url: `/users/update-role/${id}`,
                 method: "POST",
-                body: { status },
+                body: { role },
             }),
 
             async onQueryStarted(
-                { id, status },
+                { id, role },
                 { dispatch, getState, queryFulfilled }
             ) {
                 // 1️⃣ Optimistic patch (visible data)
-                const cachedQueries = orderApi.util.selectInvalidatedBy(
+                const cachedQueries = userApi.util.selectInvalidatedBy(
                     getState(),
-                    [{ type: "Orders" }]
+                    [{ type: "Users" }]
                 );
 
                 const patches = cachedQueries.map(({ endpointName, originalArgs }) => {
-                    if (endpointName !== "getOrders") return null;
+                    if (endpointName !== "getUsers") return null;
 
                     return dispatch(
-                        orderApi.util.updateQueryData(
-                            "getOrders",
+                        userApi.util.updateQueryData(
+                            "getUsers",
                             originalArgs as any,
                             (draft: any) => {
                                 const order = draft.data.find((o: any) => o.id === id);
@@ -71,39 +86,39 @@ export const orderApi = baseApi.injectEndpoints({
                 }
 
                 // 🔥 2️⃣ FORCE SERVER TRUTH
-                dispatch(orderApi.util.invalidateTags(["Orders"]));
+                dispatch(userApi.util.invalidateTags(["Users"]));
             },
         }),
 
 
         // 🔴 DELETE MULTI ROWS 
-        deleteOrders: builder.mutation<
+        deleteUsers: builder.mutation<
             { message: string },
             {
                 ids: string[];
                 search?: string;
-                status?: string;
+                role?: string;
             }
         >({
             query: ({ ids }) => ({
-                url: "/orders/cancel-seller",
-                method: "POST",
+                url: "/users",
+                method: "DELETE",
                 body: { ids },
             }),
 
             async onQueryStarted(
-                { ids, search = "", status = "undefined" },
+                { ids, search = "", role = "" },
                 { dispatch, queryFulfilled }
             ) {
                 const numericIds = ids.map(Number);
 
                 const patchResult = dispatch(
-                    orderApi.util.updateQueryData(
-                        "getOrders",
-                        { search, status },
+                    userApi.util.updateQueryData(
+                        "getUsers",
+                        { search, role },
                         (draft: any) => {
                             draft.data = draft.data.filter(
-                                (order: any) => !numericIds.includes(order.id)
+                                (user: any) => !numericIds.includes(user.id)
                             );
                         }
                     )
@@ -121,8 +136,10 @@ export const orderApi = baseApi.injectEndpoints({
 });
 
 export const {
-    useGetOrdersQuery,
-    useGetOrderByIdQuery,
-    useUpdateOrderStatusMutation,
-    useDeleteOrdersMutation,
-} = orderApi;
+    useGetUsersQuery,
+    useGetUserByIdQuery,
+    useUpdateUserRoleMutation,
+    useDeleteUsersMutation,
+    useCreateUserMutation,
+    useUpdateUserMutation,
+} = userApi;

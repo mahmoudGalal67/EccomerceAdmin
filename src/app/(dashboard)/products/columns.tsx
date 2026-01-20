@@ -1,7 +1,6 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,27 +9,17 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { cn } from "@/lib/utils";
-import { ColumnDef } from "@tanstack/react-table";
-import { ArrowUpDown, MoreHorizontal } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import StatusCell from "@/components/StatusCell";
+import { Checkbox } from "@/components/ui/checkbox";
+import { MoreHorizontal } from "lucide-react";
 
-export type Product = {
-  id: string | number;
-  price: number;
-  name: string;
-  shortDescription: string;
-  description: string;
-  sizes: string[];
-  colors: string[];
-  images: Record<string, string>;
-};
 
-export const columns: ColumnDef<Product>[] = [
+export const columns = [
   {
     id: "select",
-    header: ({ table }) => (
+    header: ({ table }: any) => (
       <Checkbox
         onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
         checked={
@@ -39,55 +28,180 @@ export const columns: ColumnDef<Product>[] = [
         }
       />
     ),
-    cell: ({ row }) => (
+    cell: ({ row }: any) => (
       <Checkbox
         onCheckedChange={(value) => row.toggleSelected(!!value)}
         checked={row.getIsSelected()}
       />
     ),
+  }
+  ,
+  {
+    accessorKey: "id",
+    header: "#Product ID",
+    enableSorting: false,
+    size: 4,
+    cell: ({ row }: any) => (
+      <Link href={`/products/${row.original.id}`} className="font-medium text-blue-600 hover:underline">
+        #{row.original.id}
+      </Link>
+    ),
   },
   {
-    accessorKey: "image",
-    header: "Image",
-    cell: ({ row }) => {
+    id: "name",
+    header: "Name",
+    accessorFn: (row: any) => row.name ?? "",
+    cell: (info: any) => info.getValue(),
+  },
+  {
+    id: "is_active",
+    header: "Active",
+    accessorFn: (row: any) => row.is_active,
+    enableSorting: false,
+    cell: (info: any) => info.getValue() == 1 ? <span className="text-green-500">Active</span> : <span className="text-red-500">Inactive</span>,
+  },
+  {
+    id: "product_preview",
+    header: "Preview",
+    cell: ({ row }: any) => {
       const product = row.original;
+      const hasVariants = product.variants?.length > 0;
+
       return (
-        <div className="w-9 h-9 relative">
-          <Image
-            src={product.images[product.colors[0]]}
-            alt={product.name}
-            fill
-            className="rounded-full object-cover"
-          />
+        <div className="flex items-start gap-3">
+          {/* IMAGE */}
+          <div className="relative h-12 w-12 shrink-0 rounded-md overflow-hidden border bg-muted">
+            <Image
+              src={
+                hasVariants
+                  ? `${process.env.NEXT_PUBLIC_BASE_API_URL}/storage/${product.variants[0]?.images?.[0]?.file_path}`
+                  : `${process.env.NEXT_PUBLIC_BASE_API_URL}/storage/${product.base_images?.[0]}`
+              }
+              alt={product.name}
+              fill
+              className="object-cover"
+            />
+          </div>
+
+
+        </div>
+      );
+    },
+  },
+
+  {
+    id: "variants",
+    header: "Product Variants",
+    cell: ({ row }: any) => {
+      const product = row.original;
+      const hasVariants = product.variants?.length > 0;
+
+      return (
+        <div className="flex items-start gap-3">
+          {/* VARIANTS */}
+          {hasVariants ? (
+            <div className="space-y-1 text-xs text-muted-foreground">
+              {product.variants.slice(0, 3).map((variant: any) => (
+                <div
+                  key={variant.id}
+                  className="flex items-center gap-2"
+                >
+                  {/* Color */}
+                  {variant.color && (
+                    <span
+                      className="h-3 w-3 rounded-full border"
+                      style={{ backgroundColor: variant.color.hex }}
+                    />
+                  )}
+
+                  {/* Size */}
+                  {variant.size && (
+                    <span className="uppercase">{variant.size.name}</span>
+                  )}
+
+                  {/* Price */}
+                  <span>${variant.price}</span>
+
+                  {/* Stock */}
+                  <span
+                    className={
+                      variant.stock > 0
+                        ? "text-green-600"
+                        : "text-red-500"
+                    }
+                  >
+                    ({variant.stock})
+                  </span>
+                </div>
+              ))}
+
+              {product.variants.length > 3 && (
+                <span className="text-xs italic">
+                  +{product.variants.length - 3} more variants
+                </span>
+              )}
+            </div>
+          ) : (
+            // BASE PRODUCT
+            <p className="text-sm text-muted-foreground">
+              Empty
+            </p>
+          )}
         </div>
       );
     },
   },
   {
-    accessorKey: "name",
-    header: "Name",
-  },
-  {
-    accessorKey: "price",
-    header: ({ column }) => {
+    id: "price",
+    header: ({ column }: any) => (
+      <button
+        className="inline-flex font-medium"
+        onClick={() =>
+          column.toggleSorting(column.getIsSorted() === "asc")
+        }
+      >
+        Price
+      </button>
+    ),
+
+    // ✅ THIS enables sorting
+    accessorFn: (row: any) => {
+      if (row.variants?.length > 0) {
+        return Math.min(
+          ...row.variants.map((v: any) => Number(v.price))
+        );
+      }
+      return Number(row.base_price ?? 0);
+    },
+
+    cell: ({ row }: any) => {
+      const product = row.original;
+      const variants = product.variants ?? [];
+
+      if (variants.length > 0) {
+        const prices = variants.map((v: any) => Number(v.price));
+        const min = Math.min(...prices);
+        const max = Math.max(...prices);
+
+        return (
+          <span className="font-medium">
+            {min === max ? `$${min}` : `$${min} – $${max}`}
+          </span>
+        );
+      }
+
       return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Price
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
+        <span className="font-medium">
+          ${product.base_price ?? "—"}
+        </span>
       );
     },
-  },
-  {
-    accessorKey: "shortDescription",
-    header: "Description",
+
+    sortingFn: "basic", // optional, numeric works by default
   },
   {
     id: "actions",
-    cell: ({ row }) => {
+    cell: ({ row }: any) => {
       const product = row.original;
 
       return (
@@ -114,4 +228,5 @@ export const columns: ColumnDef<Product>[] = [
       );
     },
   },
-];
+]
+

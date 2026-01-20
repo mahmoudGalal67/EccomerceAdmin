@@ -1,13 +1,15 @@
 // services/apiSlice.js
-import { ProductType } from "../types/types";
 import { baseApi } from "./baseApi";
 
 // Step 1: Create API slice
 export const ProductSlice = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     // Step 2: Define endpoints
-    getProducts: builder.query<ProductType[], void>({
-      query: () => "/products",
+    getProducts: builder.query<any, { search?: string; category?: string }>({
+      query: ({ search, category }) => ({
+        url: "/products",
+        params: { search, category },
+      }),
       providesTags: ["Products"],
     }),
 
@@ -19,18 +21,58 @@ export const ProductSlice = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Products"],
     }),
-    updateProduct: builder.mutation({
-      query: ({ id, ...rest }) => ({
+    getProductById: builder.query({
+      query: (id: string) => ({
         url: `/products/${id}`,
-        method: "PUT",
-        body: rest,
+      }),
+      providesTags: ["Products"],
+    }),
+    updateProduct: builder.mutation({
+      query: ({ id, data }) => ({
+        url: `/products/${id}`,
+        method: "POST",
+        body: data,
       }),
     }),
-    deleteProduct: builder.mutation({
-      query: (id) => ({
-        url: `/products/${id}`,
-        method: "DELETE",
+    // 🔴 DELETE MULTI ROWS 
+    deleteProducts: builder.mutation<
+      { message: string },
+      {
+        ids: string[];
+        search?: string;
+        category?: string;
+      }
+    >({
+      query: ({ ids }) => ({
+        url: "/products/",
+        method: "Delete",
+        body: { ids },
       }),
+
+      async onQueryStarted(
+        { ids, search = "", category = "undefined" },
+        { dispatch, queryFulfilled }
+      ) {
+        const numericIds = ids.map(Number);
+
+        const patchResult = dispatch(
+          ProductSlice.util.updateQueryData(
+            "getProducts",
+            { search, category },
+            (draft: any) => {
+              draft.data = draft.data.filter(
+                (product: any) => !numericIds.includes(product.id)
+              );
+            }
+          )
+        );
+
+        try {
+          await queryFulfilled;
+        } catch {
+          patchResult.undo(); // 🔄 rollback on failure
+        }
+      },
     }),
   }),
 });
@@ -39,6 +81,7 @@ export const ProductSlice = baseApi.injectEndpoints({
 export const {
   useGetProductsQuery,
   useAddProductMutation,
+  useGetProductByIdQuery,
   useUpdateProductMutation,
-  useDeleteProductMutation,
+  useDeleteProductsMutation,
 } = ProductSlice;
