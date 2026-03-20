@@ -26,6 +26,7 @@ export const authApi = createApi({
             query: () => ({
                 url: "/refresh",
                 method: "POST",
+                credentials: "include",
             }),
             async onQueryStarted(_, { dispatch, queryFulfilled }) {
                 try {
@@ -41,6 +42,7 @@ export const authApi = createApi({
             query: () => ({
                 url: "/logout",
                 method: "POST",
+                credentials: "include",
             }),
         }),
     }),

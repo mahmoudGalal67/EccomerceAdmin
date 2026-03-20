@@ -16,19 +16,91 @@ import {
   FormMessage,
 } from "./ui/form";
 import { Input } from "./ui/input";
-import { Button } from "./ui/button";
 import { Textarea } from "./ui/textarea";
+import { Button } from "./ui/button";
 import { Upload } from "lucide-react";
 import Image from "next/image";
 import { ScrollArea } from "./ui/scroll-area";
-import { useAddCategoryForm } from "@/hooks/useAddCategoryForm";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { axiosBaseApi } from "@/utilis/axios";
+import { useState } from "react";
 
-const AddCategory = () => {
-  const { form, onSubmit, handleFileChange, preview, isLoading } =
-    useAddCategoryForm();
+export type Category = {
+  id: string;
+  name: string;
+  description: string;
+  icon?: string;
+  slug: string;
+};
+
+// Zod validation schema
+const categorySchema = z.object({
+  name: z.string().min(2, "Name must be at least 2 characters"),
+  slug: z.string().min(2, "Slug must be at least 2 characters"),
+  description: z.string().optional(),
+  icon: z.any().optional(),
+});
+
+type CategoryFormValues = z.infer<typeof categorySchema>;
+
+const AddCategory = ({ setAddcategorySheet }: { setAddcategorySheet: (open: boolean) => void }) => {
+  const [preview, setPreview] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const form = useForm<CategoryFormValues>({
+    resolver: zodResolver(categorySchema),
+    defaultValues: {
+      name: "",
+      slug: "",
+      description: "",
+      icon: undefined,
+    },
+  });
+
+  // Handle file selection
+  const handleFileChange = (file?: File) => {
+    if (!file) return;
+    form.setValue("icon", file);
+    const url = URL.createObjectURL(file);
+    setPreview(url);
+  };
+
+  // Handle form submission
+  const onSubmit = async (data: CategoryFormValues) => {
+    setIsLoading(true);
+
+    try {
+      const formData = new FormData();
+      formData.append("name", data.name);
+      formData.append("slug", data.slug);
+      formData.append("description", data.description || "");
+      if (data.icon) {
+        formData.append("icon", data.icon);
+      }
+
+      const response = await axiosBaseApi.post("/categories", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      setAddcategorySheet(false);
+
+      console.log("Category added:", response.data);
+
+      // Reset form & preview
+      form.reset();
+      setPreview(null);
+      alert("Category added successfully!");
+    } catch (error: any) {
+      console.error(error);
+      alert("Failed to add category. Check console for details.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
-    <SheetContent>
+    <SheetContent >
       <ScrollArea className="h-screen">
         <SheetHeader>
           <SheetTitle className="mb-4">Add Category</SheetTitle>
@@ -101,7 +173,6 @@ const AddCategory = () => {
                       <FormLabel>Category Icon</FormLabel>
                       <FormControl>
                         <div className="space-y-3">
-                          {/* Hidden file input */}
                           <Input
                             type="file"
                             accept="image/*"
@@ -112,7 +183,6 @@ const AddCategory = () => {
                             }
                           />
 
-                          {/* Custom upload label */}
                           <label
                             htmlFor="icon-upload"
                             className="flex items-center justify-center gap-2 p-2 border rounded-md cursor-pointer hover:bg-accent w-fit"
@@ -121,7 +191,6 @@ const AddCategory = () => {
                             <span>Choose Icon</span>
                           </label>
 
-                          {/* Preview */}
                           {preview && (
                             <div className="mt-2">
                               <Image

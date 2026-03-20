@@ -6,8 +6,8 @@ import { baseApi } from "./baseApi";
 export const categorySlice = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     // Step 2: Define endpoints
-    getCategories: builder.query<categoryType[], void>({
-      query: () => "/categories",
+    getCategories: builder.query<any, { search?: string }>({
+      query: ({ search }) => `/categories?search=${search}`,
     }),
 
     addCategory: builder.mutation({
@@ -17,21 +17,58 @@ export const categorySlice = baseApi.injectEndpoints({
         body: newCategory,
       }),
     }),
-    updateCategory: builder.mutation({
-      query: ({ id, ...rest }) => ({
-        url: `/categories/${id}`,
-        method: "PUT",
-        body: rest,
-      }),
-    }),
-    deleteCategory: builder.mutation({
-      query: (id) => ({
-        url: `/categories/${id}`,
-        method: "DELETE",
-      }),
+    getCategoryById: builder.query<any, number>({
+      query: (id) => `/categories/${id}`,
     }),
     me: builder.query({
       query: () => "/user",
+    }),
+    updateCategory: builder.mutation({
+      query: ({ id, formData }: { id: number; formData: FormData }) => ({
+        url: `/categories/${id}`,
+        method: "PUT",
+        body: formData,
+      }),
+      invalidatesTags: ["Categories"],
+    }),
+    deleteCategories: builder.mutation<
+      { message: string },
+      {
+        ids: string[];
+        search?: string;
+      }
+    >({
+      query: ({ ids }) => ({
+        url: "/categories",
+        method: "DELETE",
+        body: { ids },
+      }),
+
+      async onQueryStarted(
+        { ids, search = "" },
+        { dispatch, queryFulfilled }
+      ) {
+        const numericIds = ids.map(Number);
+
+        const patchResult = dispatch(
+          categorySlice.util.updateQueryData(
+            "getCategories",
+            { search },
+            (draft: any) => {
+              draft.data = draft.data.filter(
+                (user: any) => !numericIds.includes(user.id)
+              );
+            }
+          )
+        );
+
+        try {
+          await queryFulfilled;
+        } catch {
+          patchResult.undo(); // 🔄 rollback on failure
+        }
+      },
+
     }),
   }),
 });
@@ -41,6 +78,7 @@ export const {
   useGetCategoriesQuery,
   useAddCategoryMutation,
   useUpdateCategoryMutation,
-  useDeleteCategoryMutation,
+  useDeleteCategoriesMutation,
   useMeQuery,
+  useGetCategoryByIdQuery,
 } = categorySlice;

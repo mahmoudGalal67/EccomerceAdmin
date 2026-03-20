@@ -1,5 +1,6 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import { UserInfo } from "@/schemas/loginSchema";
+import { setAccessToken } from "@/utilis/axios";
 
 interface AuthState {
     user: UserInfo | null;
@@ -24,10 +25,12 @@ export const authSlice = createSlice({
             state.token = action.payload.access_token;
             state.status = "authenticated";
             state.user = action.payload.userInfo;
+            setAccessToken(action.payload.access_token);
         },
         updateToken: (state, action: PayloadAction<string>) => {
             state.token = action.payload;
             state.status = "authenticated";
+            setAccessToken(action.payload);
         },
         setUser: (state, action: PayloadAction<UserInfo>) => {
             state.user = action.payload;
@@ -37,10 +40,12 @@ export const authSlice = createSlice({
             state.token = null;
             state.status = "unauthenticated";
             state.user = null;
+            setAccessToken(null);
         },
 
         authChecked: (state) => {
             state.status = "unauthenticated";
+            setAccessToken(null);
         },
     },
 });

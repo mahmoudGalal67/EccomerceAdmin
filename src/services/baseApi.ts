@@ -5,12 +5,13 @@ import { logout, updateToken } from "@/context/authSlice";
 const baseQuery = fetchBaseQuery({
     baseUrl: `${process.env.NEXT_PUBLIC_API_URL}/api`,
     credentials: "include", // send refresh cookie
+
     prepareHeaders: (headers, { getState }: any) => {
         const auth = getState()?.auth;
-        headers.set("Accept", "application/json");
         if (auth) {
             headers.set("Authorization", `Bearer ${auth.token}`);
         }
+
         return headers;
     },
 });
@@ -52,6 +53,6 @@ const baseQueryWithRefresh = async (args: any, api: any, extraOptions: any) => {
 export const baseApi = createApi({
     reducerPath: "dashboardApi",
     baseQuery: baseQueryWithRefresh,
-    tagTypes: ["Products", "Orders", "Categories", "UserInfo"],
+    tagTypes: ["Products", "Orders", "Categories", "UserInfo", "Users", "Colors", "Sizes", "settings"],
     endpoints: () => ({}),
 });

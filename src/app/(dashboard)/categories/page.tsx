@@ -1,6 +1,6 @@
 "use client";
 
-import { useGetProductsQuery, useDeleteProductsMutation } from "@/services/ProductSlice";
+import { useGetUsersQuery, useDeleteUsersMutation } from "@/services/userApi";
 import { columns } from "./columns";
 import { DataTable } from "./data-table";
 import { useState, useMemo } from "react";
@@ -10,13 +10,13 @@ import SuccessModal from "@/components/SuccessModal";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import AlertModal from "@/components/AlertModal";
 import { useDebounce } from "@/hooks/useDebounce";
-import OrdersToolbar from "@/components/TableToolBar";
-import { useGetCategoriesQuery } from "@/services/categorySlice";
+import UsersToolbar from "@/components/TableToolBar";
+import { useDeleteCategoriesMutation, useGetCategoriesQuery } from "@/services/categorySlice";
 
 
 export default function PaymentsPage() {
   const [search, setSearch] = useState("");
-  const [category, setCategory] = useState<string>('undefined');
+  const [role, setRole] = useState<string>('');
   const [rowSelection, setRowSelection] = useState({});
   const [showAlert, setShowAlert] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
@@ -36,21 +36,18 @@ export default function PaymentsPage() {
     isFetching,
     isError,
     refetch,
-  } = useGetProductsQuery({
+  } = useGetCategoriesQuery({
     search: debouncedSearch,
-    category,
   });
-  const {
-    data: categories,
-  } = useGetCategoriesQuery({});
-  const [deleteProducts] = useDeleteProductsMutation();
+
+  const [deleteCategories] = useDeleteCategoriesMutation();
 
   const handleDeleteSelected = async () => {
     if (!selectedCount) return;
 
     try {
       setShowLoading(true);
-      await deleteProducts({ ids: Object.keys(rowSelection), search, category }).unwrap();
+      await deleteCategories({ ids: Object.keys(rowSelection), search }).unwrap();
       setShowSuccess(true);
       setRowSelection({});
     } finally {
@@ -59,44 +56,45 @@ export default function PaymentsPage() {
   };
 
   const tableColumns = useMemo(() => columns, []);
+  console.log(data)
 
   return (
     <div className="px-4 py-2">
 
       {/* 🔍 Filters */}
-      <OrdersToolbar
+      <UsersToolbar
+        Sellectable={false}
+        title="Role"
         search={search}
         onSearchChange={setSearch}
-        category={category}
-        options={categories ?? []}
-        onCategoryChange={setCategory}
         selectedCount={selectedCount}
         onDeleteClick={() => setShowAlert(true)}
         isFetching={isFetching}
         onRefetch={refetch}
       />
 
-
       {/* 📊 Table */}
       <DataTable
+        //@ts-ignore
         columns={tableColumns}
-        data={data?.data ?? []}
+        data={data ?? []}
         rowSelection={rowSelection}
         setRowSelection={setRowSelection}
         isLoading={isLoading}
         isFetching={isFetching}
+        setIsLoadingModal={setShowLoading}
         onSuccess={() => setShowSuccess(true)}
       />
 
       {isError && (
-        <p className="text-red-500 mt-2">Error loading orders</p>
+        <p className="text-red-500 mt-2">Error loading users</p>
       )}
 
       {/* ✅ Success */}
       <SuccessModal
         open={showSuccess}
         title="Done"
-        description="Product processed successfully"
+        description="Order processed successfully"
         onClose={() => setShowSuccess(false)}
       />
 
@@ -109,8 +107,8 @@ export default function PaymentsPage() {
       {/* ⚠️ Alert */}
       <AlertModal
         open={showAlert}
-        title={`Delete ${selectedCount} Product?`}
-        description="Selected Product will be permanently removed."
+        title={`Delete ${selectedCount} users?`}
+        description="Selected users will be permanently removed."
         onCancel={() => setShowAlert(false)}
         onConfirm={() => {
           handleDeleteSelected();

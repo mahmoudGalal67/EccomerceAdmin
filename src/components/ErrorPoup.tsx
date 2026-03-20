@@ -71,14 +71,14 @@ export default function LaravelErrorPopup({ error }: LaravelErrorPopupProps) {
                                 size="icon"
                                 variant="ghost"
                                 onClick={() => setOpen(false)}
-                                className="h-7 w-7"
+                                className="h-7 w-7 cursor-pointer"
                             >
                                 <X className="h-4 w-4" />
                             </Button>
                         </div>
 
                         <div className="flex justify-end gap-2 border-t p-4">
-                            <Button variant="outline" onClick={() => setOpen(false)}>
+                            <Button variant="outline" onClick={() => setOpen(false)} className="cursor-pointer">
                                 Close
                             </Button>
                         </div>

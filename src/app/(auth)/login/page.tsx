@@ -67,6 +67,7 @@ function Login() {
                 type: "manual",
                 message: "Something went wrong. Please try again.",
             });
+            console.log(error);
         }
     };
 

@@ -21,7 +21,6 @@ import {
 import { DataTablePagination } from "@/components/TablePagination";
 import Loading from "../orders/loading";
 
-
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
@@ -34,7 +33,7 @@ interface DataTableProps<TData, TValue> {
 
 }
 
-export function DataTable<TData extends { id: string }, TValue>({
+export function DataTable<TData extends { id: number }, TValue>({
   columns,
   data,
   rowSelection = {},
@@ -44,7 +43,6 @@ export function DataTable<TData extends { id: string }, TValue>({
   onSuccess,
   setIsLoadingModal,
 }: DataTableProps<TData, TValue>) {
-  // const [updateUserStatus] = useUpdateUserStatusMutation();
 
   const table = useReactTable<TData>({
     data,
@@ -56,28 +54,6 @@ export function DataTable<TData extends { id: string }, TValue>({
     getFilteredRowModel: getFilteredRowModel(),
     onRowSelectionChange: setRowSelection,
     getRowId: (row) => row.id.toString(),
-    meta: {
-      updateData: async (rowIndex: number, columnId: string, value: any) => {
-        if (columnId === "role") {
-          setIsLoadingModal?.(true);
-          try {
-            // await updateOrderStatus({ id: data[rowIndex].id, status: value }).unwrap();
-            onSuccess?.();
-          } finally {
-            setIsLoadingModal?.(false);
-          }
-        }
-      },
-    },
-    // globalFilterFn: (row, _columnId, filterValue: string) => {
-    //   const search = filterValue.toLowerCase();
-    //   return (
-    //     // @ts-ignore
-    //     String(row.original.order_id).includes(search) ||
-    //     // @ts-ignore
-    //     row.original.order?.name?.toLowerCase().includes(search)
-    //   );
-    // },
   });
 
   return (

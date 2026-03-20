@@ -12,6 +12,7 @@ import {
   Shirt,
   User,
   ShoppingBasket,
+  BookCheck,
 } from "lucide-react";
 import {
   Sidebar,
@@ -74,6 +75,7 @@ const items = [
 
 const AppSidebar = () => {
   const [AdduserSheet, setAdduserSheet] = useState(false);
+  const [AddcategorySheet, setAddcategorySheet] = useState(false);
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader className="py-4">
@@ -140,9 +142,27 @@ const AppSidebar = () => {
                   </Sheet>
                 </SidebarMenuButton>
               </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+        <SidebarGroup>
+          <SidebarGroupLabel>Categories</SidebarGroupLabel>
+          <SidebarGroupAction>
+            <Plus /> <span className="sr-only">Add Category</span>
+          </SidebarGroupAction>
+          <SidebarGroupContent>
+            <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild>
-                  <Sheet>
+                  <Link href="/categories">
+                    <BookCheck />
+                    See All Categories
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <Sheet open={AddcategorySheet} onOpenChange={setAddcategorySheet}>
                     <SheetTrigger asChild>
                       <SidebarMenuButton asChild>
                         <Link href="#">
@@ -151,7 +171,7 @@ const AppSidebar = () => {
                         </Link>
                       </SidebarMenuButton>
                     </SheetTrigger>
-                    <AddCategory />
+                    <AddCategory setAddcategorySheet={setAddcategorySheet} />
                   </Sheet>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -209,33 +229,18 @@ const AppSidebar = () => {
           </SidebarGroupContent>
         </SidebarGroup>
         <SidebarGroup>
-          <SidebarGroupLabel>Orders / Payments</SidebarGroupLabel>
+          <SidebarGroupLabel>Handle / Colors</SidebarGroupLabel>
           <SidebarGroupAction>
-            <Plus /> <span className="sr-only">Add Order</span>
+            <Plus /> <span className="sr-only">Add Color</span>
           </SidebarGroupAction>
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild>
-                  <Link href="/users">
+                  <Link href="/colors">
                     <ShoppingBasket />
-                    See All Transactions
+                    See All Colors
                   </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild>
-                  <Sheet>
-                    <SheetTrigger asChild>
-                      <SidebarMenuButton asChild>
-                        <Link href="#">
-                          <Plus />
-                          Add Order
-                        </Link>
-                      </SidebarMenuButton>
-                    </SheetTrigger>
-                    <AddOrder />
-                  </Sheet>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>

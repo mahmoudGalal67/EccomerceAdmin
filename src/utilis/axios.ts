@@ -1,8 +1,15 @@
 // services/axiosUpload.ts
 import axios from "axios";
-import { store } from "@/store/store";
 import { refreshAccessToken } from "@/utilis/api";
-import { updateToken, logout } from "@/context/authSlice";
+
+let accessToken: string | null = null;
+
+export const setAccessToken = (token: string | null) => {
+  accessToken = token;
+};
+
+export const getAccessToken = () => accessToken;
+
 
 export const axiosBaseApi = axios.create({
   baseURL: `${process.env.NEXT_PUBLIC_API_URL}/api`,
@@ -11,8 +18,7 @@ export const axiosBaseApi = axios.create({
 
 // Request interceptor for adding token
 axiosBaseApi.interceptors.request.use((config) => {
-  const state = store.getState();
-  const token = state?.auth?.token;
+  const token = getAccessToken();
   if (token) config.headers.Authorization = `Bearer ${token}`;
   config.headers.Accept = "application/json";
   return config;
@@ -29,7 +35,7 @@ axiosBaseApi.interceptors.response.use(
       try {
         // refresh token
         const newAccess = await refreshAccessToken();
-        store.dispatch(updateToken(newAccess));
+        setAccessToken(newAccess);
 
         // update Authorization header
         originalRequest.headers.Authorization = `Bearer ${newAccess}`;
@@ -37,7 +43,6 @@ axiosBaseApi.interceptors.response.use(
         // retry original request
         return axiosBaseApi(originalRequest);
       } catch (err) {
-        store.dispatch(logout());
         return Promise.reject(err);
       }
     }

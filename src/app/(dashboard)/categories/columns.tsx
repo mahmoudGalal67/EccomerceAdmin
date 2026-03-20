@@ -10,21 +10,20 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { cn } from "@/lib/utils";
 import { ColumnDef } from "@tanstack/react-table";
-import { ArrowUpDown, MoreHorizontal, User } from "lucide-react";
+import { ArrowUpDown, FilterIcon, MoreHorizontal } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
-export type User = {
+export type Category = {
   id: string;
   name: string;
-  email: string;
-  role: "admin" | "client" | "seller";
-  profile_image?: string;
+  description: string;
+  icon?: string;
+  slug: string;
 };
 
-export const columns: ColumnDef<User>[] = [
+export const columns: ColumnDef<Category>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -50,24 +49,23 @@ export const columns: ColumnDef<User>[] = [
     enableSorting: false,
   },
   {
-    accessorKey: "avatar",
-    header: "Avatar",
+    accessorKey: "icon",
+    header: "Icon",
     enableSorting: false,
     cell: ({ row }) => {
-      const user = row.original;
+      const category = row.original;
       return (
         <div className="w-9 h-9 relative">
 
-          {user.profile_image ?
+          {category.icon ?
 
             <Image
-              src={`${process.env.NEXT_PUBLIC_API_URL}/storage/${user.profile_image}`}
-              alt={user.name}
+              src={`${process.env.NEXT_PUBLIC_API_URL}/storage/${category.icon}`}
+              alt={category.name}
               fill
               className="rounded-full object-cover"
             />
-            : <User className="w-9 h-9" />}
-
+            : <FilterIcon className="w-9 h-9" />}
         </div>
       );
     },
@@ -80,42 +78,27 @@ export const columns: ColumnDef<User>[] = [
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          User
+          Category
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       );
     },
   },
   {
-    accessorKey: "email",
+    accessorKey: "slug",
     enableSorting: false,
-    header: "Email",
+    header: "Slug",
   },
   {
-    accessorKey: "role",
-    header: "Role",
+    accessorKey: "description",
     enableSorting: false,
-    cell: ({ row }) => {
-      const role = row.getValue("role");
-
-      return (
-        <div
-          className={cn(
-            `p-1 rounded-md w-max text-xs`,
-            role === "admin" && "bg-green-500/40",
-            role === "seller" && "bg-yellow -500/40",
-            role === "client" && "bg-red-500/40",
-          )}
-        >
-          {role as string}
-        </div>
-      );
-    },
+    header: "Description",
   },
+
   {
     id: "actions",
     cell: ({ row }) => {
-      const user = row.original;
+      const category = row.original;
 
       return (
         <DropdownMenu>
@@ -128,13 +111,13 @@ export const columns: ColumnDef<User>[] = [
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(user.id)}
+              onClick={() => navigator.clipboard.writeText(category.id)}
             >
               Copy user ID
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem>
-              <Link href={`/users/${user.id}`}>View customer</Link>
+              <Link href={`/categories/${category.id}`}>View Category</Link>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

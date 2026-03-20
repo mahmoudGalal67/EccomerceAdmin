@@ -15,13 +15,14 @@ interface OrdersToolbarProps {
     options?: any;
     search: string;
     onSearchChange: (value: string) => void;
-    role: string;
-    onRoleChange: (value: string) => void;
+    role?: string;
+    onRoleChange?: (value: string) => void;
     selectedCount: number;
     onDeleteClick: () => void;
     isFetching: boolean;
     onRefetch: () => void;
     title?: string;
+    Sellectable?: boolean;
 }
 
 const defaultOptions = ["pending", "processing", "completed", "cancelled"];
@@ -37,6 +38,7 @@ export default function OrdersToolbar({
     onDeleteClick,
     isFetching,
     onRefetch,
+    Sellectable = true,
 }: OrdersToolbarProps) {
     return (
         <div className="space-y-3">
@@ -49,19 +51,21 @@ export default function OrdersToolbar({
                     className="w-64"
                 />
 
-                <Select value={role} onValueChange={onRoleChange}>
-                    <SelectTrigger className="w-36">
-                        <SelectValue placeholder={title} />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="undefined">All</SelectItem>
-                        {options.map((option: any) => (
-                            <SelectItem key={option} value={option?.name ? option?.name : option}>
-                                {option?.name ? option?.name : option}
-                            </SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
+                {
+                    Sellectable && (<Select value={role} onValueChange={onRoleChange}>
+                        <SelectTrigger className="w-36">
+                            <SelectValue placeholder={title} />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="undefined">All</SelectItem>
+                            {options.map((option: any) => (
+                                <SelectItem key={option} value={option?.name ? option?.name : option}>
+                                    {option?.name ? option?.name : option}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>)
+                }
 
                 {isFetching && (
                     <span className="text-sm text-muted-foreground">Searching…</span>

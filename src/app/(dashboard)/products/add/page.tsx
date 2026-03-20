@@ -24,7 +24,7 @@ export default function ProductForm() {
 
   const baseImages = watch("base_images");
   const [addProduct, { isLoading, isSuccess, reset: resetQuery }] = useAddProductMutation();
-  const { data: categories } = useGetCategoriesQuery();
+  const { data: categories } = useGetCategoriesQuery({ search: "" });
   const onSubmit = async (data: any) => {
     const convertedData = createProductFormData(data);
     try {
@@ -172,7 +172,7 @@ export default function ProductForm() {
             className="w-full rounded-lg p-2 bg-[#171717] border border-gray-700"
           >
             <option value="">Select category</option>
-            {categories?.map((cat) => (
+            {categories?.map((cat: any) => (
               <option key={cat.id} value={cat.id}>
                 {cat.name}
               </option>

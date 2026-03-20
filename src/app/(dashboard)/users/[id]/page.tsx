@@ -20,15 +20,25 @@ import { BadgeCheck, Candy, Citrus, Shield } from "lucide-react";
 import { Sheet, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import EditUser from "@/components/EditUser";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import AppLineChart from "@/components/AppLineChart";
 import ProfilePhoto from "@/components/ProfilePhoto";
-import { useGetUserByIdQuery, useGetUsersQuery } from "@/services/userApi";
+import { useGetUserByIdQuery } from "@/services/userApi";
+import React from "react";
 
-const SingleUserPage = ({ id }: { id: number }) => {
-  // const { data: user, isLoading, isError } = useGetUserByIdQuery(id);
-  const { data, isLoading, isError } = useGetUsersQuery({ search: "", role: "" });
-  const user = {}
+const SingleUserPage = ({ params }: {
+  params: Promise<{ id: number }>;
+}) => {
+  const { id } = React.use(params);
+  const { data: user, isLoading, isError } = useGetUserByIdQuery(id);
+
+  if (isLoading) {
+    return <div>Loading...</div>
+  }
+
+  if (isError) {
+    return <div>Error</div>
+  }
+
   return (
     <div className="">
       <Breadcrumb>
@@ -116,7 +126,7 @@ const SingleUserPage = ({ id }: { id: number }) => {
           {/* USER CARD CONTAINER */}
           <div className="bg-primary-foreground p-4 rounded-lg space-y-2">
             <div className="flex items-center gap-8">
-              {/* <ProfilePhoto userId={id} /> */}
+              <ProfilePhoto user={user} />
               <h1 className="text-xl font-semibold">{user?.name}</h1>
             </div>
             <p className="text-sm text-muted-foreground">
@@ -134,7 +144,7 @@ const SingleUserPage = ({ id }: { id: number }) => {
                 <SheetTrigger asChild>
                   <Button>Edit User</Button>
                 </SheetTrigger>
-                <EditUser />
+                <EditUser user={user} />
               </Sheet>
             </div>
             <div className="space-y-4 mt-4">
