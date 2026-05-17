@@ -29,7 +29,11 @@ export const variantSchema = z.object({
 export const productSchema = z
   .object({
     name: z.string().min(2, "Product name required"),
+    nameAR: z.string().min(2, "Product name required"),
     description: z
+      .string()
+      .min(5, "Description required with at least 5 characters"),
+    descriptionAR: z
       .string()
       .min(5, "Description required with at least 5 characters"),
     base_price: z.string().optional(),

@@ -162,7 +162,7 @@ export default function VariantFields({
       <div>
         <label className="block text-sm mb-2">Color</label>
         <div className="flex gap-4 flex-wrap">
-          {colors?.map((color) => {
+          {colors?.map((color: any) => {
             const isSelected = selectedColor == color.id;
             return (
               <label

@@ -7,8 +7,12 @@ export const createProductFormData = (data: ProductForm, isEdit = false) => {
   if (isEdit) {
     formData.append("_method", "PUT"); // ✅ Laravel magic
   }
-  formData.append("name", data.name);
-  formData.append("description", data.description);
+  formData.append("translations[0][locale]", 'en');
+  formData.append("translations[0][name]", data.name);
+  formData.append("translations[0][description]", data.description);
+  formData.append("translations[1][locale]", 'ar');
+  formData.append("translations[1][name]", data.nameAR);
+  formData.append("translations[1][description]", data.descriptionAR);
   formData.append("base_price", data.base_price || "0");
   formData.append("category_id", data.category_id);
   data.base_images?.forEach((file) => {

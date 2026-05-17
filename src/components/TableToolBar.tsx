@@ -45,7 +45,7 @@ export default function OrdersToolbar({
             {/* Top filters */}
             <div className="flex items-center gap-2">
                 <Input
-                    placeholder="Search by Name / Order ID"
+                    placeholder="Search by Name / Chat ID"
                     value={search}
                     onChange={(e) => onSearchChange(e.target.value)}
                     className="w-64"

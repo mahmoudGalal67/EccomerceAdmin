@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect } from "react";
+import React from "react";
 import { useProductForm } from "@/hooks/useProductForm";
 import { createProductFormData } from "@/actions/productActions";
 import VariantFields from "@/components/VariantFields";
@@ -42,26 +42,50 @@ export default function ProductForm() {
         className="max-w-3xl mx-auto space-y-8"
       >
         {/* Product Info */}
-        <div>
-          <label className="block text-sm mb-2">Product Name</label>
-          <input
-            {...register("name")}
-            className="w-full rounded-lg p-2 bg-[#171717] border border-gray-700"
-          />
-          {errors.name && (
-            <p className="text-red-500 text-sm">{errors.name.message}</p>
-          )}
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm mb-2">Product Name</label>
+            <input
+              {...register("name")}
+              className="w-full rounded-lg p-2 bg-[#171717] border border-gray-700"
+            />
+            {errors.name && (
+              <p className="text-red-500 text-sm">{errors.name.message}</p>
+            )}
+          </div>
+          <div>
+            <label className="block text-sm mb-2 text-right">اسم المنتج</label>
+            <input
+              {...register("nameAR")}
+              className="w-full rounded-lg p-2 bg-[#171717] border border-gray-700"
+            />
+            {errors.nameAR && (
+              <p className="text-red-500 text-sm">{errors.nameAR.message}</p>
+            )}
+          </div>
         </div>
 
-        <div>
-          <label className="block text-sm mb-2">Description</label>
-          <textarea
-            {...register("description")}
-            className="w-full rounded-lg p-2 bg-[#171717] border border-gray-700"
-          />
-          {errors.description && (
-            <p className="text-red-500 text-sm">{errors.description.message}</p>
-          )}
+        <div className="grid grid-cols-2 gap-4">
+          <div >
+            <label className="block text-sm mb-2">Description</label>
+            <textarea
+              {...register("description")}
+              className="w-full rounded-lg p-2 bg-[#171717] border border-gray-700"
+            />
+            {errors.description && (
+              <p className="text-red-500 text-sm">{errors.description.message}</p>
+            )}
+          </div>
+          <div>
+            <label className="block text-sm mb-2 text-right">الوصف</label>
+            <textarea
+              {...register("descriptionAR")}
+              className="w-full rounded-lg p-2 bg-[#171717] border border-gray-700"
+            />
+            {errors.descriptionAR && (
+              <p className="text-red-500 text-sm">{errors.descriptionAR.message}</p>
+            )}
+          </div>
         </div>
 
         <div>

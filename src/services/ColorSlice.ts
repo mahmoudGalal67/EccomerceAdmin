@@ -38,7 +38,7 @@ export const ColorSlice = baseApi.injectEndpoints({
             ColorSlice.util.updateQueryData("getColors", undefined, (draft) => {
               const index = draft.findIndex((c: any) => c.id === tempId);
               if (index !== -1) {
-                draft[index] = { ...data.color };
+                draft[index] = { ...data.Color };
               }
             })
           );

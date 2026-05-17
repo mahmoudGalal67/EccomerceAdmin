@@ -53,7 +53,7 @@ const items = [
   },
   {
     title: "Inbox",
-    url: "#",
+    url: "/chats",
     icon: Inbox,
   },
   {
