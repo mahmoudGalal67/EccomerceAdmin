@@ -2,7 +2,7 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { refreshAccessToken } from "@/utilis/api";
 import { logout, updateToken } from "@/context/authSlice";
 
-const baseQuery = fetchBaseQuery({
+export const baseQuery = fetchBaseQuery({
     baseUrl: `${process.env.NEXT_PUBLIC_API_URL}/api`,
     credentials: "include", // send refresh cookie
 
@@ -53,6 +53,6 @@ const baseQueryWithRefresh = async (args: any, api: any, extraOptions: any) => {
 export const baseApi = createApi({
     reducerPath: "dashboardApi",
     baseQuery: baseQueryWithRefresh,
-    tagTypes: ["Products", "Orders", "Categories", "UserInfo", "Users", "Colors", "Sizes", "settings", "Chats"],
+    tagTypes: ["Products", "Orders", "Categories", "UserInfo", "Users", "Colors", "Sizes", "settings", "Chats", 'Features'],
     endpoints: () => ({}),
 });

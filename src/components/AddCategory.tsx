@@ -38,6 +38,7 @@ export type Category = {
 // Zod validation schema
 const categorySchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
+  nameAR: z.string().min(2, "Name must be at least 2 characters"),
   slug: z.string().min(2, "Slug must be at least 2 characters"),
   description: z.string().optional(),
   icon: z.any().optional(),
@@ -73,7 +74,10 @@ const AddCategory = ({ setAddcategorySheet }: { setAddcategorySheet: (open: bool
 
     try {
       const formData = new FormData();
-      formData.append("name", data.name);
+      formData.append("translations[0][locale]", 'en');
+      formData.append("translations[0][name]", data.name);
+      formData.append("translations[1][locale]", 'ar');
+      formData.append("translations[1][name]", data.nameAR);
       formData.append("slug", data.slug);
       formData.append("description", data.description || "");
       if (data.icon) {
@@ -122,6 +126,20 @@ const AddCategory = ({ setAddcategorySheet }: { setAddcategorySheet: (open: bool
                         <Input {...field} placeholder="Category name" />
                       </FormControl>
                       <FormDescription>Enter category name.</FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="nameAR"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>الاسم</FormLabel>
+                      <FormControl>
+                        <Input {...field} placeholder="Category name" />
+                      </FormControl>
+                      <FormDescription>ادخل اسم التصنيف.</FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}

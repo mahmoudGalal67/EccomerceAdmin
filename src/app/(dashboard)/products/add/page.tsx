@@ -198,7 +198,7 @@ export default function ProductForm() {
             <option value="">Select category</option>
             {categories?.map((cat: any) => (
               <option key={cat.id} value={cat.id}>
-                {cat.name}
+                {cat.translations[0].name}
               </option>
             ))}
           </select>

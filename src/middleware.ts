@@ -6,6 +6,14 @@ export function middleware(req: NextRequest) {
     const { pathname } = req.nextUrl;
     const url = req.nextUrl.clone();
 
+    // Ignore static files
+    if (
+        pathname.startsWith("/_next") ||
+        pathname.includes(".")
+    ) {
+        return NextResponse.next();
+    }
+
     // ✅ Allow login
     if (pathname === "/login") {
         if (refreshToken) {

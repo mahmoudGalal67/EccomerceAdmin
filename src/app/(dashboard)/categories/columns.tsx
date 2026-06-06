@@ -21,6 +21,7 @@ export type Category = {
   description: string;
   icon?: string;
   slug: string;
+  translations: { name: string }[]
 };
 
 export const columns: ColumnDef<Category>[] = [
@@ -71,7 +72,7 @@ export const columns: ColumnDef<Category>[] = [
     },
   },
   {
-    accessorKey: "name",
+    accessorKey: "translations",
     header: ({ column }) => {
       return (
         <Button
@@ -83,12 +84,14 @@ export const columns: ColumnDef<Category>[] = [
         </Button>
       );
     },
+    cell: ({ row }) => {
+      const name = row.original.translations[0].name;
+      return (
+        <span>{name}</span>
+      )
+    }
   },
-  {
-    accessorKey: "slug",
-    enableSorting: false,
-    header: "Slug",
-  },
+
   {
     accessorKey: "description",
     enableSorting: false,

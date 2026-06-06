@@ -21,7 +21,7 @@ export type Chat = {
   user: any;
   status: string;
   ai_handled: boolean;
-  unread_count: number;
+  unread_by_admin: number;
   last_message_at: string;
   messages: any[];
 };
@@ -117,23 +117,23 @@ export const columns: ColumnDef<Chat>[] = [
     },
   },
   {
-    accessorKey: "unread_count",
+    accessorKey: "unread_by_admin",
     enableSorting: false,
     header: "Unread_count",
     cell: ({ row }) => {
-      const unread_count = row.original.unread_count;
+      const unread_by_admin = row.original.unread_by_admin;
 
       return (
         <Badge
           className={`
           capitalize px-3 py-1 rounded-full text-xs font-medium
-          
-          ${unread_count > 0
+
+          ${unread_by_admin > 0
               ? "bg-yellow-100 text-yellow-700 border border-yellow-200"
               : "bg-green-100 text-green-700 border border-green-200"}
         `}
         >
-          {unread_count}
+          {unread_by_admin}
         </Badge>
       );
     }

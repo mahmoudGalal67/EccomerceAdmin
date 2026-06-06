@@ -2,7 +2,7 @@
 
 import { columns } from "./columns";
 import { DataTable } from "./data-table";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 
 
 import SuccessModal from "@/components/SuccessModal";
@@ -12,11 +12,13 @@ import { useDebounce } from "@/hooks/useDebounce";
 import UsersToolbar from "@/components/TableToolBar";
 import { useDeleteCategoriesMutation } from "@/services/categorySlice";
 import { useGetChatsQuery } from "@/services/ChatsApi";
+import { initEcho } from "@/lib/bootstrap";
 
 
-export default function PaymentsPage() {
+export default function ChatsPage() {
   const [search, setSearch] = useState("");
   const [rowSelection, setRowSelection] = useState({});
+  const [chats, setchats] = useState([]);
   const [showAlert, setShowAlert] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [showLoading, setShowLoading] = useState(false);
@@ -54,7 +56,47 @@ export default function PaymentsPage() {
 
   const tableColumns = useMemo(() => columns, []);
 
-  console.log(data)
+  useEffect(() => {
+    if (data) {
+      setchats(data);
+    }
+  }, [data]);
+
+  useEffect(() => {
+    const echo = initEcho();
+
+    echo.channel("admin.support")
+      .listen(".chat.updated", (chat: any) => {
+
+        console.log(chat);
+
+        setchats((prev: any[]) => {
+
+          const exists = prev.find(
+            (c) => c.id === chat.id
+          );
+
+          // update existing
+          if (exists) {
+            return prev.map((c) =>
+              c.id === chat.id
+                ? {
+                  ...c,
+                  ...chat,
+                }
+                : c
+            );
+          }
+
+          // add new chat
+          return [chat, ...prev];
+        });
+      });
+
+    return () => {
+      echo.leave("admin.support");
+    };
+  }, []);
 
   return (
     <div className="px-4 py-2">
@@ -74,7 +116,7 @@ export default function PaymentsPage() {
       <DataTable
         //@ts-ignore
         columns={tableColumns}
-        data={data ?? []}
+        data={chats ?? []}
         rowSelection={rowSelection}
         setRowSelection={setRowSelection}
         isLoading={isLoading}

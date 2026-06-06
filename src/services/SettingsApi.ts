@@ -4,7 +4,7 @@ import { colorType } from "../types/types";
 
 export const SettingsSlice = baseApi.injectEndpoints({
     endpoints: (builder) => ({
-        // 🔹 GET COLORS
+        // 🔹 GET Settings
         getSettings: builder.query<any, any>({
             query: () => "/settings",
             providesTags: ["settings"],
@@ -12,7 +12,7 @@ export const SettingsSlice = baseApi.injectEndpoints({
 
 
 
-        // 🔹 UPDATE COLOR (OPTIMISTIC)
+        // 🔹 UPDATE Settings 
         updateSettings: builder.mutation<any, any>({
             query: (data) => ({
                 url: '/settings',

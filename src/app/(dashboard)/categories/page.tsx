@@ -16,7 +16,6 @@ import { useDeleteCategoriesMutation, useGetCategoriesQuery } from "@/services/c
 
 export default function PaymentsPage() {
   const [search, setSearch] = useState("");
-  const [role, setRole] = useState<string>('');
   const [rowSelection, setRowSelection] = useState({});
   const [showAlert, setShowAlert] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);

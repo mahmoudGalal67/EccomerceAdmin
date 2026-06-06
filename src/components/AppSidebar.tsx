@@ -13,6 +13,7 @@ import {
   User,
   ShoppingBasket,
   BookCheck,
+  Footprints,
 } from "lucide-react";
 import {
   Sidebar,
@@ -240,6 +241,24 @@ const AppSidebar = () => {
                   <Link href="/colors">
                     <ShoppingBasket />
                     See All Colors
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+        <SidebarGroup>
+          <SidebarGroupLabel>Handle / Sizes</SidebarGroupLabel>
+          <SidebarGroupAction>
+            <Plus /> <span className="sr-only">Add Size</span>
+          </SidebarGroupAction>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <Link href="/sizes">
+                    <Footprints />
+                    See All Sizes
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
