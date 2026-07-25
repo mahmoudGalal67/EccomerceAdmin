@@ -116,7 +116,7 @@ export const columns: ColumnDef<Category>[] = [
             <DropdownMenuItem
               onClick={() => navigator.clipboard.writeText(category.id)}
             >
-              Copy user ID
+              Copy Category ID
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem>

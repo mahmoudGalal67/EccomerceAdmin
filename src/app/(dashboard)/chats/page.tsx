@@ -17,8 +17,9 @@ import { initEcho } from "@/lib/bootstrap";
 
 export default function ChatsPage() {
   const [search, setSearch] = useState("");
+  const [status, setStatus] = useState<string>('undefined');
+  const [chats, setchats] = useState<Chat[]>([]);
   const [rowSelection, setRowSelection] = useState({});
-  const [chats, setchats] = useState([]);
   const [showAlert, setShowAlert] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [showLoading, setShowLoading] = useState(false);
@@ -37,7 +38,12 @@ export default function ChatsPage() {
     isFetching,
     isError,
     refetch,
-  } = useGetChatsQuery();
+  } = useGetChatsQuery({
+    search: debouncedSearch,
+    status,
+  });
+  type Chat = NonNullable<typeof data>[number];
+
 
   const [deleteCategories] = useDeleteCategoriesMutation();
 
@@ -58,7 +64,7 @@ export default function ChatsPage() {
 
   useEffect(() => {
     if (data) {
-      setchats(data);
+      setchats(data.data);
     }
   }, [data]);
 
@@ -83,6 +89,7 @@ export default function ChatsPage() {
                 ? {
                   ...c,
                   ...chat,
+                  unread_by_admin: chat.unread_by_admin,
                 }
                 : c
             );
@@ -104,8 +111,10 @@ export default function ChatsPage() {
       {/* 🔍 Filters */}
       <UsersToolbar
         title="Chats"
+        options={['pending_admin', 'resolved', 'open']}
         search={search}
         onSearchChange={setSearch}
+        onRoleChange={setStatus}
         selectedCount={selectedCount}
         onDeleteClick={() => setShowAlert(true)}
         isFetching={isFetching}
@@ -126,14 +135,14 @@ export default function ChatsPage() {
       />
 
       {isError && (
-        <p className="text-red-500 mt-2">Error loading users</p>
+        <p className="text-red-500 mt-2">Error loading Chats</p>
       )}
 
       {/* ✅ Success */}
       <SuccessModal
         open={showSuccess}
-        title="Done"
-        description="Order processed successfully"
+        title="Chat"
+        description="Chat processed successfully"
         onClose={() => setShowSuccess(false)}
       />
 
@@ -146,8 +155,8 @@ export default function ChatsPage() {
       {/* ⚠️ Alert */}
       <AlertModal
         open={showAlert}
-        title={`Delete ${selectedCount} users?`}
-        description="Selected users will be permanently removed."
+        title={`Delete ${selectedCount} Chats?`}
+        description="Selected Chats will be permanently removed."
         onCancel={() => setShowAlert(false)}
         onConfirm={() => {
           handleDeleteSelected();

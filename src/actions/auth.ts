@@ -22,7 +22,6 @@ export const handleLoginLogic = async (
                 userInfo: response.userInfo,
             })
         );
-        console.log(response);
         return response;
     } catch (error: any) {
         console.error("❌ Login failed:", error);

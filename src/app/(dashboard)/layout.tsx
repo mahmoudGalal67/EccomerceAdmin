@@ -8,6 +8,7 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import { cookies } from "next/headers";
 import RTKProvider from "@/providers/RTKProvider";
 import { AuthBootstrap } from "@/components/AuthBootstrap ";
+import GlobalSearch from "@/components/GlobalSearch";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -22,6 +23,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Galal dahsbard",
   description: "dashbord for galal store multi vendor",
+  icons: {
+    icon: "/Mylogo.png",
+  },
 };
 
 export default async function RootLayout({
@@ -48,6 +52,7 @@ export default async function RootLayout({
               <AppSidebar />
               <main className="w-full">
                 <Navbar />
+                <GlobalSearch />
                 <AuthBootstrap />
                 <div className="px-4">{children}</div>
               </main>

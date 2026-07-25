@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import { useProductForm } from "@/hooks/useProductForm";
 import { createProductFormData } from "@/actions/productActions";
 import VariantFields from "@/components/VariantFields";
@@ -8,6 +8,8 @@ import { useAddProductMutation } from "@/services/ProductSlice";
 import { X, UploadCloud, ImageIcon } from "lucide-react";
 import SuccessModal from "@/components/SuccessModal";
 import LoadingSpinner from "@/components/LoadingSpinner";
+import ErrorPoup from "@/components/ErrorPoup";
+
 
 export default function ProductForm() {
   const {
@@ -25,6 +27,7 @@ export default function ProductForm() {
   const baseImages = watch("base_images");
   const [addProduct, { isLoading, isSuccess, reset: resetQuery }] = useAddProductMutation();
   const { data: categories } = useGetCategoriesQuery({ search: "" });
+  const [err, setErr] = useState()
   const onSubmit = async (data: any) => {
     const convertedData = createProductFormData(data);
     try {
@@ -32,11 +35,12 @@ export default function ProductForm() {
       reset();
     } catch (error: any) {
       console.error("❌ Error:", error.response?.data || error);
+      setErr(error)
     }
   };
   console.log(isSuccess && !isLoading);
   return (
-    <div className="min-h-screen bg-black text-white p-8">
+    <div className="min-h-screen bg-background text-white p-8">
       <form
         onSubmit={handleSubmit(onSubmit)}
         className="max-w-3xl mx-auto space-y-8"
@@ -44,20 +48,20 @@ export default function ProductForm() {
         {/* Product Info */}
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm mb-2">Product Name</label>
+            <label className="block text-primary text-sm mb-2">Product Name</label>
             <input
               {...register("name")}
-              className="w-full rounded-lg p-2 bg-[#171717] border border-gray-700"
+              className="w-full text-primary rounded-lg p-2 bg-muted border border-gray-700"
             />
             {errors.name && (
               <p className="text-red-500 text-sm">{errors.name.message}</p>
             )}
           </div>
           <div>
-            <label className="block text-sm mb-2 text-right">اسم المنتج</label>
+            <label className="block text-primary text-sm mb-2 text-right">اسم المنتج</label>
             <input
               {...register("nameAR")}
-              className="w-full rounded-lg p-2 bg-[#171717] border border-gray-700"
+              className="w-full text-primary rounded-lg p-2 bg-muted border border-gray-700"
             />
             {errors.nameAR && (
               <p className="text-red-500 text-sm">{errors.nameAR.message}</p>
@@ -67,20 +71,20 @@ export default function ProductForm() {
 
         <div className="grid grid-cols-2 gap-4">
           <div >
-            <label className="block text-sm mb-2">Description</label>
+            <label className="block text-primary text-sm mb-2">Description</label>
             <textarea
               {...register("description")}
-              className="w-full rounded-lg p-2 bg-[#171717] border border-gray-700"
+              className="w-full text-primary rounded-lg p-2 bg-muted border border-gray-700"
             />
             {errors.description && (
               <p className="text-red-500 text-sm">{errors.description.message}</p>
             )}
           </div>
           <div>
-            <label className="block text-sm mb-2 text-right">الوصف</label>
+            <label className="block text-primary text-sm mb-2 text-right">الوصف</label>
             <textarea
               {...register("descriptionAR")}
-              className="w-full rounded-lg p-2 bg-[#171717] border border-gray-700"
+              className="w-full text-primary rounded-lg p-2 bg-muted border border-gray-700"
             />
             {errors.descriptionAR && (
               <p className="text-red-500 text-sm">{errors.descriptionAR.message}</p>
@@ -89,18 +93,18 @@ export default function ProductForm() {
         </div>
 
         <div>
-          <label className="block text-sm mb-2">Base Price</label>
+          <label className="block text-primary text-sm mb-2">Base Price</label>
           <input
             type="number"
             {...register("base_price")}
-            className="w-full rounded-lg p-2 bg-[#171717] border border-gray-700"
+            className="w-full text-primary rounded-lg p-2 bg-muted border border-gray-700"
           />
           {errors.base_price && (
             <p className="text-red-500 text-sm">{errors.base_price.message}</p>
           )}
         </div>
         <div>
-          <label className="block text-sm mb-2">Base Imegs</label>
+          <label className="block text-primary text-sm mb-2">Base Imegs</label>
 
 
           <div className="space-y-3">
@@ -118,10 +122,10 @@ export default function ProductForm() {
     `}
             >
               <UploadCloud className="h-8 w-8 text-muted-foreground" />
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-primary">
                 Click or drag images here
               </p>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-primary">
                 PNG, JPG, WEBP (max 2MB)
               </p>
 
@@ -190,10 +194,10 @@ export default function ProductForm() {
 
         </div>
         <div>
-          <label className="block text-sm mb-2">Category</label>
+          <label className="block text-primary text-sm mb-2">Category</label>
           <select
             {...register("category_id")}
-            className="w-full rounded-lg p-2 bg-[#171717] border border-gray-700"
+            className="w-full text-primary rounded-lg p-2 bg-muted border border-gray-700"
           >
             <option value="">Select category</option>
             {categories?.map((cat: any) => (
@@ -226,7 +230,7 @@ export default function ProductForm() {
 
           <button
             type="button"
-            className="bg-white text-black px-3 py-2 rounded-lg text-sm"
+            className="bg-muted-foreground text-black px-3 py-2 rounded-lg text-sm"
             onClick={() =>
               append({
                 id: crypto.randomUUID(),
@@ -234,7 +238,7 @@ export default function ProductForm() {
                 stock: "",
                 color_id: "",
                 size_id: "",
-                images: [],
+                images_all: [],
               })
             }
           >
@@ -246,7 +250,7 @@ export default function ProductForm() {
         <button
           type="submit"
           disabled={isLoading}
-          className="bg-[#171717] hover:bg-blue-600 px-4 py-2 rounded-lg text-white cursor-pointer"
+          className="bg-accent-foreground hover:bg-blue-600 px-4 py-2 rounded-lg text-popover cursor-pointer"
         >
           {isLoading ? "Loading ..." : "Submit Product"}
         </button>
@@ -264,6 +268,7 @@ export default function ProductForm() {
         open={isLoading}
         onClose={() => { }}
       />
+      <ErrorPoup error={err} />
 
     </div>
   );

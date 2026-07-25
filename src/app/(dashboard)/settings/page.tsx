@@ -288,8 +288,8 @@ export default function SettingsPage() {
 
                     <Separator />
 
-                    <Button type="submit" className="w-full">
-                        Save Settings
+                    <Button type="submit" className="w-full cursor-pointer">
+                        {updateLoading ? "Updating..." : " Save Settings"}
                     </Button>
                 </CardContent>
             </Card>

@@ -11,7 +11,7 @@ import {
 import { Trash2 } from "lucide-react";
 import RefetchButton from "@/components/RefetchButton";
 
-interface OrdersToolbarProps {
+interface TablesToolbarProps {
     options?: any;
     search: string;
     onSearchChange: (value: string) => void;
@@ -27,7 +27,7 @@ interface OrdersToolbarProps {
 
 const defaultOptions = ["pending", "processing", "completed", "cancelled"];
 
-export default function OrdersToolbar({
+export default function TablesToolbar({
     title = "Orders",
     options = defaultOptions,
     search,
@@ -39,13 +39,13 @@ export default function OrdersToolbar({
     isFetching,
     onRefetch,
     Sellectable = true,
-}: OrdersToolbarProps) {
+}: TablesToolbarProps) {
     return (
         <div className="space-y-3">
             {/* Top filters */}
             <div className="flex items-center gap-2">
                 <Input
-                    placeholder="Search by Name / Chat ID"
+                    placeholder={`Search by Name / ${title} ID`}
                     value={search}
                     onChange={(e) => onSearchChange(e.target.value)}
                     className="w-64"

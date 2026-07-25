@@ -52,6 +52,7 @@ const CategoryDetailsPage = ({ params }: {
     resolver: zodResolver(categorySchema),
     defaultValues: {
       name: "",
+      nameAR: "",
       slug: "",
       description: "",
       icon: undefined,
@@ -62,7 +63,8 @@ const CategoryDetailsPage = ({ params }: {
   useEffect(() => {
     if (!category) return;
     form.reset({
-      name: category.name,
+      name: category.translations[0].name,
+      nameAR: category.translations[1].name,
       slug: category.slug,
       description: category.description || "",
       icon: undefined,
@@ -85,8 +87,8 @@ const CategoryDetailsPage = ({ params }: {
       const formData = new FormData();
       formData.append("translations[0][locale]", 'en');
       formData.append("translations[0][name]", data.name);
-      formData.append("translations[0][locale]", 'ar');
-      formData.append("translations[0][name]", data.nameAR);
+      formData.append("translations[1][locale]", 'ar');
+      formData.append("translations[1][name]", data.nameAR);
       formData.append("slug", data.slug);
       formData.append("description", data.description || "");
       if (data.icon) {
@@ -114,7 +116,7 @@ const CategoryDetailsPage = ({ params }: {
 
 
       <ScrollArea className="h-screen">
-        <h1 className="mb-4">Edit Category</h1>
+        <h1 className="mb-4">Edit {category.translations[0].name} Category</h1>
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">

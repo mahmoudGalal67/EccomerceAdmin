@@ -3,7 +3,7 @@ import { z } from "zod";
 
 // ✅ Variant schema
 export const variantSchema = z.object({
-  id: z.string().optional(),
+  id: z.coerce.string().optional() || null,
 
   price: z.string().min(1, "Price is required"),
   stock: z.string().min(1, "Stock is required"),
@@ -21,7 +21,7 @@ export const variantSchema = z.object({
   },
   {
     message: "At least one image is required",
-    path: ["images"],
+    path: ["images_all"],
   }
 );
 
@@ -39,7 +39,7 @@ export const productSchema = z
     base_price: z.string().optional(),
     category_id: z.string().min(1, "Category required"),
     base_images: z.array(z.instanceof(File)).optional(),
-    variants: z.any(),
+    variants: z.array(variantSchema).optional(),
     existing_base_images: z.any(),
     deleted_base_images: z.any(),
   })

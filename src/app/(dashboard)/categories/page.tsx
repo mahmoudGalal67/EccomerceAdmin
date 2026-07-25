@@ -55,7 +55,6 @@ export default function PaymentsPage() {
   };
 
   const tableColumns = useMemo(() => columns, []);
-  console.log(data)
 
   return (
     <div className="px-4 py-2">
@@ -63,7 +62,7 @@ export default function PaymentsPage() {
       {/* 🔍 Filters */}
       <UsersToolbar
         Sellectable={false}
-        title="Role"
+        title="Categorie"
         search={search}
         onSearchChange={setSearch}
         selectedCount={selectedCount}
@@ -86,14 +85,14 @@ export default function PaymentsPage() {
       />
 
       {isError && (
-        <p className="text-red-500 mt-2">Error loading users</p>
+        <p className="text-red-500 mt-2">Error loading Categories</p>
       )}
 
       {/* ✅ Success */}
       <SuccessModal
         open={showSuccess}
         title="Done"
-        description="Order processed successfully"
+        description="category processed successfully"
         onClose={() => setShowSuccess(false)}
       />
 
@@ -106,8 +105,8 @@ export default function PaymentsPage() {
       {/* ⚠️ Alert */}
       <AlertModal
         open={showAlert}
-        title={`Delete ${selectedCount} users?`}
-        description="Selected users will be permanently removed."
+        title={`Delete ${selectedCount} categories?`}
+        description="Selected categories will be permanently removed."
         onCancel={() => setShowAlert(false)}
         onConfirm={() => {
           handleDeleteSelected();

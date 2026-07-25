@@ -25,9 +25,14 @@ export const createProductFormData = (data: ProductForm, isEdit = false) => {
     formData.append("existing_base_images[]", img);
   });
   data.variants?.forEach((variant: any, i: number) => {
-    formData.append(`variants[${i}][id]`, variant.id);
+    if (variant.id) {
+      formData.append(`variants[${i}][id]`, String(variant.id));
+    }
     formData.append(`variants[${i}][price]`, variant.price);
-    formData.append(`variants[${i}][sku]`, variant.sku);
+    formData.append(
+      `variants[${i}][sku]`,
+      variant.sku ?? ""
+    );
     formData.append(`variants[${i}][stock]`, variant.stock);
     formData.append(`variants[${i}][color_id]`, variant.color_id);
     formData.append(`variants[${i}][size_id]`, variant.size_id);
@@ -45,7 +50,10 @@ export const createProductFormData = (data: ProductForm, isEdit = false) => {
       // New uploaded file
       if (img.type === "new") {
         formData.append(`variants[${i}][images][${j}][type]`, img.type);
-        formData.append(`variants[${i}][images][${j}][sort_order]`, String(img.sort_order));
+        formData.append(
+          `variants[${i}][images][${j}][sort_order]`,
+          String(img.sort_order ?? j)
+        );
         formData.append(`variants[${i}][images][${j}][file]`, img.file); // the File object
       }
     });

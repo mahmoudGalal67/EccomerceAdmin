@@ -15,11 +15,20 @@ import { Button } from "./ui/button";
 import { useTheme } from "next-themes";
 import { SidebarTrigger } from "./ui/sidebar";
 import { useSelector } from "react-redux";
+import { useRouter } from "next/navigation";
+import { useLogout } from "@/hooks/auth";
 
 const Navbar = () => {
   const { setTheme } = useTheme();
-  const state = useSelector((state: any) => state.auth);
-  console.log(state);
+  const user = useSelector((state: any) => state.auth.user);
+  const router = useRouter();
+  const { logOutrHook } = useLogout();
+
+
+  const handleLogout = async () => {
+    await logOutrHook()
+    router.push("/login");
+  }
 
   return (
     <nav className="p-4 flex items-center justify-between sticky top-0 bg-background z-10">
@@ -56,8 +65,8 @@ const Navbar = () => {
         <DropdownMenu>
           <DropdownMenuTrigger>
             <Avatar>
-              <AvatarImage src="https://avatars.githubusercontent.com/u/1486366" />
-              <AvatarFallback>CN</AvatarFallback>
+              <AvatarImage src={`${process.env.NEXT_PUBLIC_API_URL}/storage/${user?.profile_image}`} />
+              <AvatarFallback>Admin</AvatarFallback>
             </Avatar>
           </DropdownMenuTrigger>
           <DropdownMenuContent sideOffset={10}>
@@ -65,15 +74,15 @@ const Navbar = () => {
             <DropdownMenuSeparator />
             <DropdownMenuItem>
               <User className="h-[1.2rem] w-[1.2rem] mr-2" />
-              Profile
+              <Link href={`/users/${user?.id}`}>Profile</Link>
             </DropdownMenuItem>
             <DropdownMenuItem>
               <Settings className="h-[1.2rem] w-[1.2rem] mr-2" />
-              Settings
+              <Link href='/features'>Settings</Link>
             </DropdownMenuItem>
             <DropdownMenuItem variant="destructive">
               <LogOut className="h-[1.2rem] w-[1.2rem] mr-2" />
-              Logout
+              <button className="cursor-pointer" onClick={handleLogout}>Log out </button>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

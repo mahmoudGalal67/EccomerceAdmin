@@ -48,6 +48,7 @@ const EditUser = ({ user }: EditUserProps) => {
     },
   });
 
+
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
       await updateUser({ id: user.id, ...values }).unwrap();

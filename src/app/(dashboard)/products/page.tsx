@@ -10,8 +10,8 @@ import SuccessModal from "@/components/SuccessModal";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import AlertModal from "@/components/AlertModal";
 import { useDebounce } from "@/hooks/useDebounce";
-import OrdersToolbar from "@/components/TableToolBar";
 import { useGetCategoriesQuery } from "@/services/categorySlice";
+import TablesToolbar from "@/components/TableToolBar";
 
 
 export default function PaymentsPage() {
@@ -64,12 +64,12 @@ export default function PaymentsPage() {
     <div className="px-4 py-2">
 
       {/* 🔍 Filters */}
-      <OrdersToolbar
+      <TablesToolbar
         search={search}
+        title="Products"
         onSearchChange={setSearch}
-        category={category}
-        options={categories ?? []}
-        onCategoryChange={setCategory}
+        onRoleChange={setCategory}
+        options={categories ? categories?.map((cat: any) => ({ ...cat, name: cat?.translations[0]?.name })) : []}
         selectedCount={selectedCount}
         onDeleteClick={() => setShowAlert(true)}
         isFetching={isFetching}

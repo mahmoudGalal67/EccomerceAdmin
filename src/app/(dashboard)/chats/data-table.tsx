@@ -44,6 +44,9 @@ export function DataTable<TData extends { id: number }, TValue>({
   setIsLoadingModal,
 }: DataTableProps<TData, TValue>) {
 
+
+
+
   const table = useReactTable<TData>({
     data,
     columns,

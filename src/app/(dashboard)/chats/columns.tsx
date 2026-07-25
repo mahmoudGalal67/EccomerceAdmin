@@ -121,19 +121,18 @@ export const columns: ColumnDef<Chat>[] = [
     enableSorting: false,
     header: "Unread_count",
     cell: ({ row }) => {
-      const unread_by_admin = row.original.unread_by_admin;
-
+      const unreadCount = row.original.unread_by_admin ?? 0;
       return (
         <Badge
           className={`
           capitalize px-3 py-1 rounded-full text-xs font-medium
 
-          ${unread_by_admin > 0
+          ${unreadCount > 0
               ? "bg-yellow-100 text-yellow-700 border border-yellow-200"
               : "bg-green-100 text-green-700 border border-green-200"}
         `}
         >
-          {unread_by_admin}
+          {unreadCount}
         </Badge>
       );
     }

@@ -118,12 +118,12 @@ export default function VariantFields({
   return (
     <div
       key={field.id}
-      className="p-4 mb-6 rounded-xl bg-[#171717] border border-gray-700 space-y-4"
+      className="p-4 mb-6 rounded-xl bg-background border border-gray-700 space-y-4"
     >
       {/* Price + Stock */}
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm mb-2">Price</label>
+          <label className="block text-primary text-sm mb-2">Price</label>
           <input
             type="number"
             {...register(`variants.${index}.price`)}
@@ -131,7 +131,7 @@ export default function VariantFields({
               register(`variants.${index}.price`).onChange(e);
               setIsDirty(true);
             }}
-            className="w-full rounded-lg p-2 bg-[#171717] border border-gray-600"
+            className="w-full rounded-lg p-2 text-primary bg-background border border-gray-600"
           />
           {errors.variants?.[index]?.price && (
             <p className="text-red-500 text-sm">
@@ -140,7 +140,7 @@ export default function VariantFields({
           )}
         </div>
         <div>
-          <label className="block text-sm mb-2">Stock</label>
+          <label className="block text-primary text-sm mb-2">Stock</label>
           <input
             type="number"
             {...register(String(`variants.${index}.stock`))}
@@ -148,7 +148,7 @@ export default function VariantFields({
               register(String(`variants.${index}.stock`)).onChange(e);
               setIsDirty(true);
             }}
-            className="w-full rounded-lg p-2 bg-[#171717] border border-gray-600"
+            className="w-full rounded-lg p-2 bg-background border border-gray-600 text-primary"
           />
           {errors.variants?.[index]?.stock && (
             <p className="text-red-500 text-sm">
@@ -160,14 +160,14 @@ export default function VariantFields({
 
       {/* Colors */}
       <div>
-        <label className="block text-sm mb-2">Color</label>
+        <label className="block text-primary text-sm mb-2">Color</label>
         <div className="flex gap-4 flex-wrap">
           {colors?.map((color: any) => {
             const isSelected = selectedColor == color.id;
             return (
               <label
                 key={color.id}
-                className={`flex items-center gap-2 cursor-pointer border-2 rounded-full p-1 ${isSelected ? "border-white" : "border-transparent"
+                className={`flex items-center gap-2 cursor-pointer border-2 rounded-full p-1 ${isSelected ? "border-brimary" : "border-transparent"
                   }`}
               >
                 <input
@@ -197,7 +197,7 @@ export default function VariantFields({
 
       {/* Sizes */}
       <div>
-        <label className="block text-sm mb-2">Size</label>
+        <label className="block text-primary text-sm mb-2">Size</label>
         <div className="flex gap-4 flex-wrap">
           {sizes?.map((size) => {
             const isSelected = selectedSize == size.id;
@@ -217,7 +217,7 @@ export default function VariantFields({
                   }}
                   className="hidden"
                 />
-                <span className="text-xs">{size.code}</span>
+                <span className="text-xs text-primary">{size.code}</span>
               </label>
             );
           })}
@@ -232,7 +232,7 @@ export default function VariantFields({
       {/* Image upload + DnD reorder */}
       {selectedColor && selectedSize && (
         <div>
-          <label className="block text-sm mb-2">Upload Images</label>
+          <label className="block text-primary text-sm mb-2">Upload Images</label>
           {/* Upload box */}
           <label
             htmlFor={`variants.${index}.images`}
@@ -241,7 +241,7 @@ export default function VariantFields({
       border-2 border-dashed rounded-xl p-6
       cursor-pointer transition
       hover:border-primary hover:bg-primary/5
-      ${errors.variants?.[index]?.images ? "border-red-500" : "border-muted"}
+      ${errors.variants?.[index]?.images_all ? "border-red-500" : "border-muted"}
     `}
           >
             <UploadCloud className="h-8 w-8 text-muted-foreground" />
@@ -269,7 +269,11 @@ export default function VariantFields({
 
                 setValue(
                   `variants.${index}.images_all`,
-                  [...images, ...files]
+                  [...images, ...files],
+                  {
+                    shouldValidate: true,
+                    shouldDirty: true,
+                  }
                 );
 
                 setIsDirty(true);
@@ -299,7 +303,11 @@ export default function VariantFields({
                       if (image.type === "existing") {
                         setValue(
                           `variants.${index}.deleted_images`,
-                          [...(deletedImages ?? []), image.file_path]
+                          [...(deletedImages ?? []), image.file_path],
+                          {
+                            shouldValidate: true,
+                            shouldDirty: true,
+                          }
                         );
                       } else {
                         URL.revokeObjectURL(image.previewUrl);
@@ -307,7 +315,11 @@ export default function VariantFields({
 
                       setValue(
                         `variants.${index}.images_all`,
-                        images.filter((img: any) => img.dndId !== image.dndId)
+                        images.filter((img: any) => img.dndId !== image.dndId),
+                        {
+                          shouldValidate: true,
+                          shouldDirty: true,
+                        }
                       );
 
                       setIsDirty(true);
@@ -318,9 +330,9 @@ export default function VariantFields({
             </SortableContext>
           </DndContext>
 
-          {errors.variants?.[index]?.images && (
+          {errors.variants?.[index]?.images_all && (
             <p className="text-red-500 text-sm">
-              {errors.variants[index]?.images?.message as string}
+              {errors.variants[index]?.images_all?.message as string}
             </p>
           )}
         </div>
@@ -329,7 +341,7 @@ export default function VariantFields({
       {/* Delete Variant */}
       <button
         type="button"
-        className="text-red-400 text-sm mt-2 bg-[#030000] p-2 rounded-2xl"
+        className="text-red-400 text-sm mt-2 bg-muted-foreground p-2 rounded-2xl"
         onClick={() => {
           remove(index);
           setIsDirty(true);

@@ -95,16 +95,16 @@ export default function SettingsForm() {
 
         if (data.background_image) {
             setBackgroundPreview(
-                data.background_image
+                process.env.NEXT_PUBLIC_API_URL + data.background_image
             );
         }
 
         if (data.store_logo) {
-            setLogoPreview(data.store_logo);
+            setLogoPreview(process.env.NEXT_PUBLIC_API_URL + data.store_logo);
         }
 
         if (data.favicon) {
-            setFaviconPreview(data.favicon);
+            setFaviconPreview(process.env.NEXT_PUBLIC_API_URL + data.favicon);
         }
     }, [data, reset]);
 
@@ -151,8 +151,15 @@ export default function SettingsForm() {
                 new FormData();
 
             Object.entries(values).forEach(([key, value]) => {
-                if (Array.isArray(value)) {
-                    value.forEach((item) => {
+
+                if (key === "payment_methods") {
+                    formData.append(
+                        "payment_methods",
+                        JSON.stringify(value)
+                    );
+                }
+                else if (Array.isArray(value)) {
+                    value.forEach((item: any) => {
                         formData.append(`${key}[]`, item);
                     });
                 } else if (typeof value === "object" && value !== null) {

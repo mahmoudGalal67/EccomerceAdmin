@@ -17,6 +17,7 @@ export const useProductForm = () => {
     resolver: zodResolver(productSchema),
     defaultValues: {
       name: "",
+      nameAR: "",
       description: "",
       base_price: "",
       base_images: [],

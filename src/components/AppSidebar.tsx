@@ -14,6 +14,7 @@ import {
   ShoppingBasket,
   BookCheck,
   Footprints,
+  OptionIcon,
 } from "lucide-react";
 import {
   Sidebar,
@@ -40,11 +41,13 @@ import {
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
 import { Sheet, SheetTrigger } from "./ui/sheet";
-import AddOrder from "./AddOrder";
 import AddUser from "./AddUser";
 import AddCategory from "./AddCategory";
-import AddProduct from "./AddProduct";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useSelector } from "react-redux";
+import { useLogout } from "@/hooks/auth";
+import { useGetunreadStatsQuery } from "@/services/ChatsApi";
 
 const items = [
   {
@@ -59,17 +62,17 @@ const items = [
   },
   {
     title: "Calendar",
-    url: "#",
+    url: "/calendar",
     icon: Calendar,
   },
   {
-    title: "Search",
-    url: "#",
-    icon: Search,
+    title: "Features",
+    url: "/features",
+    icon: OptionIcon,
   },
   {
     title: "Settings",
-    url: "#",
+    url: "/settings",
     icon: Settings,
   },
 ];
@@ -77,6 +80,19 @@ const items = [
 const AppSidebar = () => {
   const [AdduserSheet, setAdduserSheet] = useState(false);
   const [AddcategorySheet, setAddcategorySheet] = useState(false);
+  const user = useSelector((state: any) => state.auth.user);
+  const router = useRouter();
+  const { logOutrHook } = useLogout();
+
+  const {
+    data,
+  } = useGetunreadStatsQuery('');
+
+  const handleLogout = async () => {
+    await logOutrHook()
+    router.push("/login");
+  }
+
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader className="py-4">
@@ -84,8 +100,8 @@ const AppSidebar = () => {
           <SidebarMenuItem>
             <SidebarMenuButton asChild>
               <Link href="/">
-                <Image src="/logo.svg" alt="logo" width={20} height={20} />
-                <span>Lama Dev</span>
+                <Image src="/Mylogo.png" alt="logo" width={20} height={20} />
+                <span>Mahmoud Galal</span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -106,7 +122,7 @@ const AppSidebar = () => {
                     </Link>
                   </SidebarMenuButton>
                   {item.title === "Inbox" && (
-                    <SidebarMenuBadge>24</SidebarMenuBadge>
+                    <SidebarMenuBadge>{data?.chats_with_unread}-({data?.total_unread_messages})</SidebarMenuBadge>
                   )}
                 </SidebarMenuItem>
               ))}
@@ -130,17 +146,10 @@ const AppSidebar = () => {
               </SidebarMenuItem>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild>
-                  <Sheet>
-                    <SheetTrigger asChild>
-                      <SidebarMenuButton asChild>
-                        <Link href="#">
-                          <Plus />
-                          Add Product
-                        </Link>
-                      </SidebarMenuButton>
-                    </SheetTrigger>
-                    <AddProduct />
-                  </Sheet>
+                  <Link href="/products/add">
+                    <Plus />
+                    Add Product
+                  </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
@@ -272,19 +281,19 @@ const AppSidebar = () => {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <SidebarMenuButton>
-                  <User2 /> John Doe <ChevronUp className="ml-auto" />
+                  <User2 /> {user?.name} <ChevronUp className="ml-auto" />
                 </SidebarMenuButton>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem>Account</DropdownMenuItem>
-                <DropdownMenuItem>Setting</DropdownMenuItem>
-                <DropdownMenuItem>Sign out</DropdownMenuItem>
+                <DropdownMenuItem><Link href={`/users/${user?.id}`}>Account</Link></DropdownMenuItem>
+                <DropdownMenuItem><Link href='/features'>Features</Link></DropdownMenuItem>
+                <DropdownMenuItem>  <button className="cursor-pointer" onClick={handleLogout}>Sign out </button></DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarFooter>
-    </Sidebar>
+    </Sidebar >
   );
 };
 

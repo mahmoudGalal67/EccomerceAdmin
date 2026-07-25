@@ -32,9 +32,8 @@ export default function UserProfileAvatar({ user }: { user: any }) {
 
         const formData = new FormData();
         formData.append("profile_image", file);
-        formData.append("_method", "PUT");
 
-        const res = await axiosBaseApi.post(`/users/${user.id}`, formData, {
+        const res = await axiosBaseApi.post(`/users/profile/${user.id}`, formData, {
             onUploadProgress: (e) => {
                 if (!e.total) return;
                 const percent = Math.round((e.loaded * 100) / e.total);

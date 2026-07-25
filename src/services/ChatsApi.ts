@@ -4,8 +4,12 @@ import { baseApi } from "./baseApi";
 export const ChatsAdminSlice = baseApi.injectEndpoints({
     endpoints: (builder) => ({
         // 🔹 GET Chats
-        getChats: builder.query<any, void>({
-            query: () => "/admin/support/chats",
+        getChats: builder.query<any, { search?: string; status?: string }>({
+            query: ({ search, status }) =>
+            ({
+                url: "/admin/support/chats",
+                params: { search, status }
+            }),
             providesTags: ["Chats"],
         }),
 
@@ -15,6 +19,11 @@ export const ChatsAdminSlice = baseApi.injectEndpoints({
                 url: `/admin/support/messages/${id}`,
             }),
         }),
+        getunreadStats: builder.query<any, any>({
+            query: () => ({
+                url: '/admin/support/unreadStats',
+            }),
+        }),
         // 🔹 ADD Chat (OPTIMISTIC)
         sendAdminMessage: builder.mutation<any, any>({
             query: (data) => ({
@@ -22,6 +31,33 @@ export const ChatsAdminSlice = baseApi.injectEndpoints({
                 method: "POST",
                 body: data,
             }),
+        }),
+        markALLMessagesIsreadForAdmin: builder.mutation<any, any>({
+            query: (data) => ({
+                url: "/admin/support/markALLMessagesIsreadForAdmin",
+                method: "POST",
+                body: data,
+            }),
+            invalidatesTags: ["Chats"],
+
+        }),
+        closeChatChat: builder.mutation<any, any>({
+            query: (data) => ({
+                url: "/admin/support/closeChat",
+                method: "POST",
+                body: data,
+            }),
+            invalidatesTags: ["Chats"],
+
+        }),
+        openChat: builder.mutation<any, any>({
+            query: (data) => ({
+                url: "/admin/support/openChat",
+                method: "POST",
+                body: data,
+            }),
+            invalidatesTags: ["Chats"],
+
         }),
 
         // 🔹 DELETE Chat (OPTIMISTIC)
@@ -36,7 +72,11 @@ export const ChatsAdminSlice = baseApi.injectEndpoints({
 
 export const {
     useGetChatsQuery,
+    useGetunreadStatsQuery,
     useSendAdminMessageMutation,
-    useGetChatQuery,
+    useMarkALLMessagesIsreadForAdminMutation,
+    useGetChatQuery,    
     useDeleteChatMutation,
+    useCloseChatChatMutation,
+    useOpenChatMutation
 } = ChatsAdminSlice;

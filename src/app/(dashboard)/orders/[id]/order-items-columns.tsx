@@ -8,29 +8,46 @@ export type OrderItem = {
     quantity: number;
     unit_price: string;
     line_total: string;
-    variant: {
+
+    product?: {
+        translations: { name: string }[];
+    };
+
+    variant?: {
         product: {
             name: string;
         };
         color?: { name: string };
         size?: { name: string };
-    };
+    } | null;
 };
 
 export const orderItemsColumns: ColumnDef<OrderItem>[] = [
     {
         header: "Product",
-        cell: ({ row }) => (
-            <div className="flex flex-col">
-                <span className="font-medium">
-                    {row.original.variant.product.name}
-                </span>
-                <span className="text-xs opacity-60">
-                    {row.original.variant.color?.name} /{" "}
-                    {row.original.variant.size?.name}
-                </span>
-            </div>
-        ),
+        cell: ({ row }) => {
+            const item = row.original;
+
+            const productName =
+                item.variant?.product?.name ??
+                item.product?.translations?.[0]?.name ??
+                "Unknown Product";
+
+            const color = item.variant?.color?.name;
+            const size = item.variant?.size?.name;
+
+            return (
+                <div className="flex flex-col">
+                    <span className="font-medium">{productName}</span>
+
+                    {(color || size) && (
+                        <span className="text-xs opacity-60">
+                            {[color, size].filter(Boolean).join(" / ")}
+                        </span>
+                    )}
+                </div>
+            );
+        },
     },
     {
         header: "Qty",

@@ -5,15 +5,17 @@ import { createProductFormData } from "@/actions/productActions";
 import VariantFields from "@/components/VariantFields";
 import { useGetCategoriesQuery } from "@/services/categorySlice";
 import { useAddProductMutation, useGetProductByIdQuery, useUpdateProductMutation } from "@/services/ProductSlice";
-import { X, UploadCloud, ImageIcon } from "lucide-react";
+import { X, UploadCloud, ImageIcon, Search } from "lucide-react";
 import SuccessModal from "@/components/SuccessModal";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { useParams } from "next/navigation";
 import { useRouter } from "next/navigation";
 import Loading from "@/components/loading";
+import ErrorPoup from "@/components/ErrorPoup";
 
 export default function ProductForm() {
     const [showSuccess, setShowSuccess] = useState(false);
+    const [err, setErr] = useState()
 
     const { id } = useParams();
     const router = useRouter();
@@ -42,7 +44,7 @@ export default function ProductForm() {
     const baseImages = watch("base_images");
     const [addProduct, { isLoading: isAddLoading, isSuccess: isAddSuccess, reset: resetQuery }] = useAddProductMutation();
     const [updateProduct, { isLoading: isUpdateLoading, isSuccess: isUpdateSuccess }] = useUpdateProductMutation();
-    const { data: categories } = useGetCategoriesQuery();
+    const { data: categories } = useGetCategoriesQuery({ search: '' });
 
     const isLoading = isAddLoading || isUpdateLoading;
     const isSuccess = isAddSuccess || isUpdateSuccess;
@@ -51,6 +53,7 @@ export default function ProductForm() {
         const convertedData = createProductFormData(data, isEdit);
         console.log(data);
         try {
+
             if (isEdit) {
                 await updateProduct({ id, data: convertedData }).unwrap();
                 // router.push("/products");
@@ -61,9 +64,11 @@ export default function ProductForm() {
             setShowSuccess(true);
         } catch (error: any) {
             console.error("❌ Error:", error.response?.data || error);
+            setErr(err)
         }
     };
 
+    console.log(product)
 
     useEffect(() => {
         if (!product) return;
@@ -74,8 +79,10 @@ export default function ProductForm() {
          * - Existing images are shown as previews ONLY
          */
         reset({
-            name: product.name,
-            description: product.description,
+            name: product.translations[0]?.name,
+            nameAR: product.translations[1]?.name,
+            description: product.translations[0]?.description,
+            descriptionAR: product.translations[1]?.description,
             base_price: product.base_price,
             category_id: String(product.categories?.[0]?.id) ?? "",
             base_images: [], // 👈 NEVER put URLs here
@@ -97,16 +104,24 @@ export default function ProductForm() {
             })),
         });
         setIsDirty(false);
-    }, [product, reset]);
+    }, [product, categories, reset]);
 
 
     if (isProductLoading) return <Loading />
 
     return (
-        <div className="min-h-screen bg-black text-white p-8">
+        <div className="min-h-screen bg-background text-white p-8">
             <form
 
-                onSubmit={handleSubmit(onSubmit)}
+                onSubmit={handleSubmit(
+                    (data) => {
+                        console.log("VALID", data);
+                        onSubmit(data);
+                    },
+                    (errors) => {
+                        console.log("INVALID", errors);
+                    }
+                )}
                 className="max-w-3xl mx-auto space-y-8"
             >
                 {/* Product Info */}
@@ -114,10 +129,10 @@ export default function ProductForm() {
                     {isEdit ? `Edit  ${product?.name} Product` : "Add Product"}
                 </h1>
                 <div>
-                    <label className="block text-sm mb-2">Product Name</label>
+                    <label className="block text-primary text-sm mb-2">Product Name</label>
                     <input
                         {...register("name")}
-                        className="w-full rounded-lg p-2 bg-[#171717] border border-gray-700"
+                        className="w-full rounded-lg p-2 bg-muted text-primary border border-gray-700"
                         onChange={(e) => {
                             register("name").onChange(e);
                             setIsDirty(true);
@@ -127,12 +142,26 @@ export default function ProductForm() {
                         <p className="text-red-500 text-sm">{errors.name.message}</p>
                     )}
                 </div>
+                <div>
+                    <label className="block text-primary text-sm mb-2">اسم المنتج  </label>
+                    <input
+                        {...register("nameAR")}
+                        className="w-full rounded-lg p-2 bg-muted text-primary border border-gray-700"
+                        onChange={(e) => {
+                            register("nameAR").onChange(e);
+                            setIsDirty(true);
+                        }}
+                    />
+                    {errors.nameAR && (
+                        <p className="text-red-500 text-sm">{errors.nameAR.message}</p>
+                    )}
+                </div>
 
                 <div>
-                    <label className="block text-sm mb-2">Description</label>
+                    <label className="block text-primary text-sm mb-2">Description</label>
                     <textarea
                         {...register("description")}
-                        className="w-full rounded-lg p-2 bg-[#171717] border border-gray-700"
+                        className="w-full rounded-lg p-2 bg-muted text-primary border border-gray-700"
                         onChange={(e) => {
                             register("description").onChange(e);
                             setIsDirty(true);
@@ -142,13 +171,27 @@ export default function ProductForm() {
                         <p className="text-red-500 text-sm">{errors.description.message}</p>
                     )}
                 </div>
+                <div>
+                    <label className="block text-primary text-sm mb-2">وصف المنتج</label>
+                    <textarea
+                        {...register("descriptionAR")}
+                        className="w-full rounded-lg p-2 bg-muted text-primary border border-gray-700"
+                        onChange={(e) => {
+                            register("descriptionAR").onChange(e);
+                            setIsDirty(true);
+                        }}
+                    />
+                    {errors.descriptionAR && (
+                        <p className="text-red-500 text-sm">{errors.descriptionAR.message}</p>
+                    )}
+                </div>
 
                 <div>
-                    <label className="block text-sm mb-2">Base Price</label>
+                    <label className="block text-primary text-sm mb-2">Base Price</label>
                     <input
                         type="number"
                         {...register("base_price")}
-                        className="w-full rounded-lg p-2 bg-[#171717] border border-gray-700"
+                        className="w-full rounded-lg p-2 bg-muted text-primary border border-gray-700"
                         onChange={(e) => {
                             register("base_price").onChange(e);
                             setIsDirty(true);
@@ -160,7 +203,7 @@ export default function ProductForm() {
                     )}
                 </div>
                 <div>
-                    <label className="block text-sm mb-2">Base Imegs</label>
+                    <label className="block text-primary text-sm mb-2">Base Imegs</label>
 
 
                     <div className="space-y-3">
@@ -284,9 +327,9 @@ export default function ProductForm() {
 
                 </div>
                 <div>
-                    <label className="block text-sm mb-2">Category</label>
+                    <label className="block text-primary text-sm mb-2">Category</label>
                     <select
-                        className="w-full rounded-lg p-2 bg-[#171717] border border-gray-700"
+                        className="w-full rounded-lg p-2 bg-muted text-primary border border-gray-700"
                         {...register("category_id")}
                         onChange={(e) => {
                             register("category_id").onChange(e);
@@ -295,9 +338,9 @@ export default function ProductForm() {
 
                     >
                         <option value="">Select category</option>
-                        {categories?.map((cat) => (
-                            <option key={cat.id} value={cat.id}>
-                                {cat.name}
+                        {categories?.map((cat: any) => (
+                            <option key={cat.id} value={String(cat.id)}>
+                                {cat.translations[0].name}
                             </option>
                         ))}
                     </select>
@@ -326,10 +369,9 @@ export default function ProductForm() {
 
                     <button
                         type="button"
-                        className="bg-white text-black px-3 py-2 rounded-lg text-sm"
+                        className="bg-card bg-muted-foreground text-primary px-3 py-2 rounded-lg text-sm"
                         onClick={() => {
                             append({
-                                id: crypto.randomUUID(),
                                 price: "",
                                 stock: "",
                                 color_id: "",
@@ -348,7 +390,7 @@ export default function ProductForm() {
                 <button
                     type="submit"
                     disabled={!isDirty || isLoading}
-                    className="bg-[#171717] hover:bg-blue-600 px-4 py-2 rounded-lg text-white cursor-pointer"
+                    className="bg-accent-foreground text-popover hover:bg-blue-600 px-4 py-2 rounded-lg  cursor-pointer"
                 >
                     {isLoading
                         ? "Saving..."
@@ -370,7 +412,7 @@ export default function ProductForm() {
                 open={isLoading}
                 onClose={() => { }}
             />
-
+            <ErrorPoup error={err} />
         </div >
     );
 }

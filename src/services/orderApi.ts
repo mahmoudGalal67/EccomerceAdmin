@@ -6,7 +6,7 @@ export const orderApi = baseApi.injectEndpoints({
         // 🔹 SELLER ORDERS WITH SEARCH & FILTERS
         getOrders: builder.query<any, { search?: string; status?: string }>({
             query: ({ search, status }) => ({
-                url: "/orders/seller",
+                url: "/orders/all",
                 params: { search, status },
             }),
             providesTags: ["Orders"],

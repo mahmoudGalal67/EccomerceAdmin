@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useGetChatQuery, useSendAdminMessageMutation } from "@/services/ChatsApi";
+import { useGetChatQuery, useMarkALLMessagesIsreadForAdminMutation, useCloseChatChatMutation, useSendAdminMessageMutation, useOpenChatMutation } from "@/services/ChatsApi";
 import { SendHorizonal, Bot, User } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
@@ -23,6 +23,9 @@ const ChatMessagesPage = ({
     isError,
   } = useGetChatQuery({ id });
   const [sendMeessage] = useSendAdminMessageMutation();
+  const [markAllAdminMessagesRead] = useMarkALLMessagesIsreadForAdminMutation();
+  const [closeChat] = useCloseChatChatMutation();
+  const [openChat] = useOpenChatMutation();
 
   const [message, setMessage] = useState("");
 
@@ -42,6 +45,18 @@ const ChatMessagesPage = ({
 
 
   useEffect(() => {
+    markAllAdminMessagesRead({ chat_id: id })
+    closeChat({ chat_id: id })
+
+    return () => {
+      openChat({ chat_id: id })
+    }
+
+  }, [])
+
+
+  
+  useEffect(() => {
     if (!id) return;
 
     const echo = initEcho();
@@ -50,7 +65,7 @@ const ChatMessagesPage = ({
 
     channel.listen(".message.sent", (e: any) => {
       if (e.sender == 'admin') return
-      setLocalMessages((prev) => [...prev, e]);
+      setLocalMessages((prev) => [...prev, { ...e }]);
       console.log(e)
     });
     return () => {
@@ -125,7 +140,7 @@ const ChatMessagesPage = ({
   }
 
   return (
-    <div className="flex flex-col bg-muted/30">
+    <div className="flex flex-col bg-muted/30  min-h-[85vh]">
 
       {/* Header */}
       <div className="border-b  px-6 py-4 flex items-center justify-between shadow-sm">
@@ -154,7 +169,7 @@ const ChatMessagesPage = ({
 
       {/* Messages */}
       <ScrollArea className="flex-1 px-4 py-6">
-        <div className="max-w-7xl mx-auto space-y-6">
+        <div className="max-w-7xl mx-auto space-y-6 ">
 
           {localMessages?.map((msg: any) => {
             const isUser = msg.sender === "user";

@@ -11,12 +11,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 import Image from "next/image";
 import Link from "next/link";
-import StatusCell from "@/components/StatusCell";
 import { Checkbox } from "@/components/ui/checkbox";
 import { MoreHorizontal } from "lucide-react";
 
+import { ColumnDef } from "@tanstack/react-table";
 
-export const columns = [
+export const columns: ColumnDef<any>[] = [
   {
     id: "select",
     header: ({ table }: any) => (
@@ -42,7 +42,7 @@ export const columns = [
     enableSorting: false,
     size: 4,
     cell: ({ row }: any) => (
-      <Link href={`/products/${row.original.id}`} className="font-medium text-blue-600 hover:underline">
+      <Link href={`/products/${row.original.id}/edit`} className="font-medium text-blue-600 hover:underline">
         #{row.original.id}
       </Link>
     ),
@@ -50,7 +50,7 @@ export const columns = [
   {
     id: "name",
     header: "Name",
-    accessorFn: (row: any) => row.name ?? "",
+    accessorFn: (row: any) => row.translations[0].name ?? "",
     cell: (info: any) => info.getValue(),
   },
   {
@@ -67,6 +67,7 @@ export const columns = [
       const product = row.original;
       const hasVariants = product.variants?.length > 0;
 
+
       return (
         <div className="flex items-start gap-3">
           {/* IMAGE */}
@@ -77,7 +78,7 @@ export const columns = [
                   ? `${process.env.NEXT_PUBLIC_BASE_API_URL}/storage/${product.variants[0]?.images?.[0]?.file_path}`
                   : `${process.env.NEXT_PUBLIC_BASE_API_URL}/storage/${product.base_images?.[0]}`
               }
-              alt={product.name}
+              alt={product.translations[0].name}
               fill
               className="object-cover"
             />
@@ -153,6 +154,7 @@ export const columns = [
   },
   {
     id: "price",
+    accessorKey: "price",
     header: ({ column }: any) => (
       <button
         className="inline-flex font-medium"
@@ -221,7 +223,7 @@ export const columns = [
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem>
-              <Link href={`/products/${product.id}`}>View customer</Link>
+              <Link href={`/products/${product.id}/edit`}>View product</Link>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

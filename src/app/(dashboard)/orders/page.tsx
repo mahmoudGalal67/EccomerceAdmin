@@ -64,8 +64,7 @@ export default function PaymentsPage() {
       <OrdersToolbar
         search={search}
         onSearchChange={setSearch}
-        status={status}
-        onStatusChange={setStatus}
+        onRoleChange={setStatus}
         selectedCount={selectedCount}
         onDeleteClick={() => setShowAlert(true)}
         isFetching={isFetching}
